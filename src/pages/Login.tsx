@@ -1,8 +1,11 @@
 import { useState } from 'react';
+// Contexts
 import { useAuth } from '../contexts/AuthContextData';
+// Core Components
+import Header from '@/components/Header';
+// UI Components
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
-import Header from '@/components/Header';
 
 export default function Login() {
     const [password, setPassword] = useState('');

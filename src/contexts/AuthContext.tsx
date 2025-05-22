@@ -1,4 +1,5 @@
 import { createContext, useState, useEffect, ReactNode } from 'react';
+// Types
 import { AuthContextData, User } from '@/types/auth';
 
 const AuthContext = createContext<AuthContextData>({} as AuthContextData);

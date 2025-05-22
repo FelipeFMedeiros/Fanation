@@ -1,4 +1,6 @@
+// Core Components
 import Header from '@/components/Header';
+// UI Components
 import Button from '@/components/ui/Button';
 
 export default function Dashboard() {

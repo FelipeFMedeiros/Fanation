@@ -1,4 +1,5 @@
 import { InputHTMLAttributes, forwardRef, useState } from 'react';
+// MUI Icons
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
