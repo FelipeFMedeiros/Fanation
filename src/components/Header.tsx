@@ -1,5 +1,7 @@
-import Button from '@/components/ui/Button';
+// Contexts
 import { useAuth } from '../contexts/AuthContextData';
+// UI Components
+import Button from '@/components/ui/Button';
 
 interface HeaderProps {
     variant?: 'login' | 'primary';

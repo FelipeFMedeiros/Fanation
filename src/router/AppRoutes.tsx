@@ -1,8 +1,11 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+// Contexts
 import { useAuth } from '@/contexts/AuthContextData';
+// Routes
+import PrivateRoute from './PrivateRoute';
+// Pages
 import Login from '@/pages/Login';
 import Dashboard from '@/pages/Dashboard';
-import PrivateRoute from './PrivateRoute';
 
 export default function AppRoutes() {
     const { isAuthenticated } = useAuth();
