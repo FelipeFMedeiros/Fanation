@@ -15,8 +15,11 @@ export default defineConfig(({ mode }) => {
     return {
         plugins: [react(), tailwindcss()],
         server: {
-            port: parseInt(env.VITE_PORT) || 5175,
-            host: env.VITE_HOST || '192.168.1.128',
+            port: parseInt(env.VITE_PORT) || 5173,
+            // Adicionar host apenas em desenvolvimento
+            ...(env.VITE_ENV === 'development' && {
+                host: env.VITE_HOST || 'localhost',
+            }),
         },
         resolve: {
             alias: {
