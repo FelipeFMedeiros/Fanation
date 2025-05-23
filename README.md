@@ -47,6 +47,7 @@ O arquivo `.env.example` contém todas as variáveis necessárias para o funcion
 VITE_API_BASE_URL=http://localhost:3000/api
 VITE_HOST=localhost
 VITE_PORT=5173
+VITE_ENV=development
 ```
 
 Edite o arquivo `.env` conforme necessário, especialmente se sua API estiver rodando em outro endereço ou porta. Certifique-se de manter todas as variáveis presentes para garantir o funcionamento correto do ambiente de desenvolvimento.
