@@ -1,4 +1,6 @@
 import { createContext, useState, useEffect, ReactNode } from 'react';
+// Services
+import { apiService } from '@/services/api';
 // Types
 import { AuthContextData, User } from '@/types/auth';
 
@@ -10,51 +12,64 @@ interface AuthProviderProps {
 
 export function AuthProvider({ children }: AuthProviderProps) {
     const [user, setUser] = useState<User | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(true); // Apenas para validação inicial
 
-    // Verificar se há um token salvo no localStorage
+    // Verificar se há um token salvo no localStorage e validá-lo
     useEffect(() => {
-        const token = localStorage.getItem('@fanation:token');
+        const validateStoredToken = async () => {
+            const token = localStorage.getItem('@fanation:token');
 
-        if (token) {
-            // TODO: Validar token com a API no futuro
-            // Por enquanto, simulamos um usuário logado
-            setUser({
-                id: '1',
-                email: 'admin@fanation.com',
-                name: 'Administrador',
-            });
-        }
+            if (token) {
+                try {
+                    // Validar token com a API
+                    const response = await apiService.validateToken();
 
-        setIsLoading(false);
+                    if (response.success && response.user) {
+                        setUser({
+                            id: response.user.id,
+                            name: response.user.name,
+                            role: response.user.role,
+                        });
+                    } else {
+                        // Token inválido, remover do localStorage
+                        localStorage.removeItem('@fanation:token');
+                    }
+                } catch (error) {
+                    console.error('Erro ao validar token:', error);
+                    // Token inválido, remover do localStorage
+                    localStorage.removeItem('@fanation:token');
+                }
+            }
+
+            setIsLoading(false);
+        };
+
+        validateStoredToken();
     }, []);
 
     const signIn = async (password: string) => {
+        // NÃO gerenciar loading aqui - deixar para o componente Login
         try {
-            setIsLoading(true);
+            // Fazer login na API
+            const response = await apiService.login(password);
 
-            // TODO: Implementar chamada para API de autenticação
-            // Por enquanto, simulamos um login com senha fixa
-            if (password === 'admin') {
-                const mockUser: User = {
-                    id: '1',
-                    email: 'admin@fanation.com',
-                    name: 'Administrador',
-                };
+            if (response.success && response.token && response.user) {
+                // Salvar token no localStorage
+                localStorage.setItem('@fanation:token', response.token);
 
-                // Simular token
-                const mockToken = 'mock-jwt-token';
-                localStorage.setItem('@fanation:token', mockToken);
-
-                setUser(mockUser);
+                // Definir usuário logado
+                setUser({
+                    id: response.user.id,
+                    name: response.user.name,
+                    role: response.user.role,
+                });
             } else {
-                throw new Error('Senha incorreta');
+                throw new Error(response.message || 'Erro ao fazer login');
             }
-        // eslint-disable-next-line no-useless-catch
         } catch (error) {
-            throw error;
-        } finally {
-            setIsLoading(false);
+            // Garantir que o token seja removido em caso de erro
+            localStorage.removeItem('@fanation:token');
+            throw error; // Re-throw para o componente tratar
         }
     };
 
@@ -66,7 +81,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const value: AuthContextData = {
         user,
         isAuthenticated: !!user,
-        isLoading,
+        isLoading, // Apenas para validação inicial do token
         signIn,
         signOut,
     };
