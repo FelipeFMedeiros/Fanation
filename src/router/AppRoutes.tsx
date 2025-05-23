@@ -1,37 +1,48 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 // Contexts
-import { useAuth } from '@/contexts/AuthContextData';
-// Routes
-import PrivateRoute from './PrivateRoute';
+import { AuthProvider } from '@/contexts/AuthContext';
+// Components
+import PrivateRoute from '@/router/PrivateRoute';
 // Pages
 import Login from '@/pages/Login';
 import Dashboard from '@/pages/Dashboard';
 
-export default function AppRoutes() {
-    const { isAuthenticated } = useAuth();
-
+export default function AppRouter() {
     return (
         <BrowserRouter>
-            <Routes>
-                {/* Rota pública - Login */}
-                <Route path="/login" element={isAuthenticated ? <Navigate to="/Dashboard" replace /> : <Login />} />
+            <AuthProvider>
+                <Routes>
+                    {/* ========== ROTAS PÚBLICAS ========== */}
+                    <Route
+                        path="/login"
+                        element={
+                            <PrivateRoute requireAuth={false}>
+                                <Login />
+                            </PrivateRoute>
+                        }
+                    />
 
-                {/* Rotas privadas */}
-                <Route
-                    path="/Dashboard"
-                    element={
-                        <PrivateRoute>
-                            <Dashboard />
-                        </PrivateRoute>
-                    }
-                />
+                    {/* ========== ROTAS PRIVADAS ========== */}
+                    <Route
+                        path="/"
+                        element={
+                            <PrivateRoute>
+                                <Dashboard />
+                            </PrivateRoute>
+                        }
+                    />
 
-                {/* Redirecionamento padrão */}
-                <Route path="/" element={<Navigate to={isAuthenticated ? '/Dashboard' : '/login'} replace />} />
-
-                {/* Rota 404 */}
-                <Route path="*" element={<Navigate to={isAuthenticated ? '/Dashboard' : '/login'} replace />} />
-            </Routes>
+                    {/* Rota catch-all - redireciona para dashboard se autenticado */}
+                    <Route
+                        path="*"
+                        element={
+                            <PrivateRoute>
+                                <Dashboard />
+                            </PrivateRoute>
+                        }
+                    />
+                </Routes>
+            </AuthProvider>
         </BrowserRouter>
     );
 }
