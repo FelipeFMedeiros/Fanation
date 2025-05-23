@@ -2,7 +2,7 @@ import { ButtonHTMLAttributes, ReactNode } from 'react';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
     children: ReactNode;
-    variant?: 'primary' | 'secondary';
+    variant?: 'primary' | 'secondary' | 'purple';
     size?: 'sm' | 'md' | 'lg';
     isLoading?: boolean;
 }
@@ -39,6 +39,14 @@ export default function Button({
             bg-white text-gray-900 border border-gray-300
             hover:bg-gray-50 hover:border-gray-400 hover:shadow-gray-200/50
             active:bg-gray-100 active:border-gray-500
+            focus:ring-gray-500
+            disabled:bg-gray-100 disabled:text-gray-400 
+            disabled:hover:bg-gray-100 disabled:hover:border-gray-300
+        `,
+        purple: `
+            bg-[#440986] text-white border border-gray-300
+            hover:bg-gray-50 hover:border-gray-400 hover:shadow-gray-200/50
+            active:bg-gray-100 active:border-gray-500 hover:text-gray-900
             focus:ring-gray-500
             disabled:bg-gray-100 disabled:text-gray-400 
             disabled:hover:bg-gray-100 disabled:hover:border-gray-300
