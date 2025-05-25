@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { FilterList } from '@mui/icons-material';
 
 // Components
@@ -12,6 +13,7 @@ import PiecesTable from '@/components/PiecesTable';
 import { mockPieces } from '@/utils/mockPieces';
 
 export default function Dashboard() {
+    const navigate = useNavigate();
     const [activeFilter, setActiveFilter] = useState('todos');
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
@@ -45,7 +47,7 @@ export default function Dashboard() {
                         {/* Page Header */}
                         <div className="flex flex-col gap-4 mb-6 lg:mb-8 lg:flex-row lg:items-center lg:justify-between">
                             <h1 className="text-xl lg:text-2xl font-bold text-gray-900">Peças gerais</h1>
-                            <Button variant="primary" className="w-full lg:w-auto">
+                            <Button variant="primary" className="w-full lg:w-auto" onClick={() => navigate('/criar')}>
                                 Adicionar peça
                             </Button>
                         </div>

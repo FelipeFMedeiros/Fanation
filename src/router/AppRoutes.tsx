@@ -6,6 +6,7 @@ import PrivateRoute from '@/router/PrivateRoute';
 // Pages
 import Login from '@/pages/Login';
 import Dashboard from '@/pages/Dashboard';
+import Product from '@/pages/Product';
 
 export default function AppRouter() {
     return (
@@ -28,6 +29,15 @@ export default function AppRouter() {
                         element={
                             <PrivateRoute>
                                 <Dashboard />
+                            </PrivateRoute>
+                        }
+                    />
+
+                    <Route
+                        path="/criar"
+                        element={
+                            <PrivateRoute>
+                                <Product />
                             </PrivateRoute>
                         }
                     />
