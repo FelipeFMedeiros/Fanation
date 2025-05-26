@@ -2,15 +2,15 @@ export interface Piece {
     id: string;
     title: string;
     sku: string;
-    type: 'Americano' | 'Trucker';
+    productType: 'americano' | 'trucker'; 
     displayOrder: number;
     status: 'Ativo' | 'Inativo' | 'Expirado';
     cutType?: 'frente' | 'aba' | 'lateral';
     position?: 'frente' | 'traseira';
-    productType?: 'boné americano' | 'boné trucker';
     material?: 'linho';
     materialColor?: 'azul marinho' | 'laranja';
     imageUrl?: string;
+    isActive?: boolean; 
     createdAt?: Date;
     updatedAt?: Date;
 }
@@ -27,7 +27,7 @@ export interface PieceListResponse {
 // Types for filtering and search
 export interface PieceFilters {
     status?: Piece['status'];
-    type?: Piece['type'];
+    productType: Piece['productType'];
     cutType?: Piece['cutType'];
     material?: Piece['material'];
     search?: string;
@@ -42,7 +42,6 @@ export interface PaginationParams {
 export interface CreatePieceData {
     title: string;
     sku: string;
-    type: Piece['type'];
     displayOrder: number;
     cutType: Piece['cutType'];
     position: Piece['position'];
@@ -50,6 +49,9 @@ export interface CreatePieceData {
     material: Piece['material'];
     materialColor: Piece['materialColor'];
     image?: File;
+    imageUrl?: string;
+    isActive?: boolean;
+    createdAt?: Date;
 }
 
 export interface UpdatePieceData extends Partial<CreatePieceData> {

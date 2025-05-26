@@ -1,131 +1,186 @@
-import { ChevronLeft, ChevronRight } from '@mui/icons-material';
+import { useState } from 'react';
+import { Edit, Delete, ChevronLeft, ChevronRight } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 
-interface Piece {
-    id: string;
-    title: string;
-    sku: string;
-    type: string;
-    displayOrder: number;
-    status: 'Ativo' | 'Inativo' | 'Expirado';
-}
+// Components
+import Button from './ui/Button';
+
+// Types
+import { Piece } from '@/types/pieces';
+
+// Services
+import { recortesService } from '@/services/recortes';
 
 interface PiecesTableProps {
     pieces: Piece[];
-    currentPage?: number;
-    totalPages?: number;
-    onPageChange?: (page: number) => void;
+    currentPage: number;
+    totalPages: number;
+    onPageChange: (page: number) => void;
+    onDeleteSuccess?: () => void;
 }
 
-export default function PiecesTable({ pieces, currentPage = 1, totalPages = 4, onPageChange }: PiecesTableProps) {
-    const getStatusBadge = (status: string) => {
-        const baseClasses = 'px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap';
+export default function PiecesTable({
+    pieces,
+    currentPage,
+    totalPages,
+    onPageChange,
+    onDeleteSuccess,
+}: PiecesTableProps) {
+    const navigate = useNavigate();
+    const [deletingId, setDeletingId] = useState<string | null>(null);
 
+    const handleEdit = (sku: string) => {
+        console.log('Editando peça com SKU original:', sku);
+        
+        // Garantir que o SKU está limpo (sem #)
+        const cleanSku = sku.startsWith('#') ? sku.substring(1) : sku;
+        console.log('SKU limpo para navegação:', cleanSku);
+        
+        navigate(`/editar/${encodeURIComponent(cleanSku)}`);
+    };
+
+    const handleDelete = async (id: string, title: string) => {
+        if (!confirm(`Tem certeza que deseja excluir "${title}"?`)) {
+            return;
+        }
+
+        setDeletingId(id);
+        try {
+            await recortesService.deleteRecorte(id);
+            onDeleteSuccess?.();
+        } catch (error) {
+            console.error('Erro ao excluir peça:', error);
+            alert('Erro ao excluir peça. Tente novamente.');
+        } finally {
+            setDeletingId(null);
+        }
+    };
+
+    const formatDate = (date?: Date) => {
+        if (!date) return '-';
+        return new Intl.DateTimeFormat('pt-BR', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+        }).format(date);
+    };
+
+    const getStatusColor = (status: string) => {
         switch (status) {
             case 'Ativo':
-                return `${baseClasses} bg-green-100 text-green-800`;
+                return 'bg-green-100 text-green-800';
             case 'Inativo':
-                return `${baseClasses} bg-gray-100 text-gray-800`;
+                return 'bg-gray-100 text-gray-800';
             case 'Expirado':
-                return `${baseClasses} bg-red-100 text-red-800`;
+                return 'bg-red-100 text-red-800';
             default:
-                return `${baseClasses} bg-gray-100 text-gray-800`;
+                return 'bg-gray-100 text-gray-800';
         }
-    };
-
-    const handlePreviousPage = () => {
-        if (currentPage > 1) {
-            onPageChange?.(currentPage - 1);
-        }
-    };
-
-    const handleNextPage = () => {
-        if (currentPage < totalPages) {
-            onPageChange?.(currentPage + 1);
-        }
-    };
-
-    const handlePageClick = (page: number) => {
-        onPageChange?.(page);
-    };
-
-    // Função para renderizar páginas visíveis (mobile responsivo)
-    const renderPageNumbers = () => {
-        const pages = [];
-        const maxVisible = window.innerWidth < 640 ? 3 : Math.min(5, totalPages);
-
-        let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
-        const endPage = Math.min(totalPages, startPage + maxVisible - 1);
-
-        if (endPage - startPage + 1 < maxVisible) {
-            startPage = Math.max(1, endPage - maxVisible + 1);
-        }
-
-        for (let i = startPage; i <= endPage; i++) {
-            pages.push(
-                <button
-                    key={i}
-                    onClick={() => handlePageClick(i)}
-                    className={`
-                        relative inline-flex items-center px-3 py-2 border text-sm font-medium
-                        transition-colors duration-200 min-w-[40px] justify-center
-                        ${
-                            i === currentPage
-                                ? 'z-10 bg-gray-900 border-gray-900 text-white'
-                                : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
-                        }
-                    `}
-                >
-                    {i}
-                </button>,
-            );
-        }
-
-        return pages;
     };
 
     return (
-        <div className="w-full">
-            {/* Table - Garantir largura mínima para scroll horizontal */}
-            <div className="min-w-[700px]">
-                <table className="w-full divide-y divide-gray-200">
+        <div>
+            {/* Tabela */}
+            <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                         <tr>
-                            <th className="px-3 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[200px]">
-                                Título
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Peça
                             </th>
-                            <th className="px-3 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[100px]">
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 SKU
                             </th>
-                            <th className="px-3 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Tipo
                             </th>
-                            <th className="px-3 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[150px]">
-                                Ordem de exibição
-                            </th>
-                            <th className="px-3 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[100px]">
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Status
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Ordem
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Criado em
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Ações
                             </th>
                         </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
                         {pieces.map((piece) => (
                             <tr key={piece.id} className="hover:bg-gray-50 transition-colors duration-150">
-                                <td className="px-3 lg:px-6 py-4 text-sm font-medium text-gray-900">
-                                    <div className="max-w-[180px] truncate" title={piece.title}>
-                                        {piece.title}
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                    <div className="flex items-center">
+                                        <div className="flex-shrink-0 h-10 w-10">
+                                            {piece.imageUrl ? (
+                                                <img
+                                                    className="h-10 w-10 rounded-lg object-cover"
+                                                    src={piece.imageUrl}
+                                                    alt={piece.title}
+                                                />
+                                            ) : (
+                                                <div className="h-10 w-10 rounded-lg bg-gray-200 flex items-center justify-center">
+                                                    <span className="text-gray-400 text-xs">IMG</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="ml-4">
+                                            <div className="text-sm font-medium text-gray-900">{piece.title}</div>
+                                            <div className="text-sm text-gray-500">
+                                                {piece.cutType} • {piece.material}
+                                            </div>
+                                        </div>
                                     </div>
                                 </td>
-                                <td className="px-3 lg:px-6 py-4 text-sm text-gray-900 whitespace-nowrap">
-                                    {piece.sku}
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                    <div className="text-sm text-gray-900 font-mono">{piece.sku}</div>
                                 </td>
-                                <td className="px-3 lg:px-6 py-4 text-sm text-gray-900 whitespace-nowrap">
-                                    {piece.type}
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                    <div className="text-sm text-gray-900">
+                                        {piece.productType
+                                            ? piece.productType.charAt(0).toUpperCase() + piece.productType.slice(1)
+                                            : ''}
+                                    </div>
                                 </td>
-                                <td className="px-3 lg:px-6 py-4 text-sm text-gray-900 whitespace-nowrap text-center">
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                    <span
+                                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(
+                                            piece.status,
+                                        )}`}
+                                    >
+                                        {piece.status}
+                                    </span>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                     {piece.displayOrder}
                                 </td>
-                                <td className="px-3 lg:px-6 py-4">
-                                    <span className={getStatusBadge(piece.status)}>{piece.status}</span>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {formatDate(piece.createdAt)}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                    <div className="flex items-center gap-2">
+                                        <button
+                                            onClick={() => handleEdit(piece.sku)}
+                                            className="p-2 text-blue-600 hover:text-blue-900 hover:bg-blue-50 rounded-lg transition-colors duration-200"
+                                            title="Editar"
+                                        >
+                                            <Edit className="w-4 h-4" />
+                                        </button>
+                                        <button
+                                            onClick={() => handleDelete(piece.id, piece.title)}
+                                            disabled={deletingId === piece.id}
+                                            className={`p-2 rounded-lg transition-colors duration-200 ${
+                                                deletingId === piece.id
+                                                    ? 'text-gray-400 cursor-not-allowed'
+                                                    : 'text-red-600 hover:text-red-900 hover:bg-red-50'
+                                            }`}
+                                            title="Excluir"
+                                        >
+                                            <Delete className="w-4 h-4" />
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         ))}
@@ -133,50 +188,34 @@ export default function PiecesTable({ pieces, currentPage = 1, totalPages = 4, o
                 </table>
             </div>
 
-            {/* Pagination */}
-            <div className="bg-white px-3 lg:px-6 py-3 flex items-center justify-between border-t border-gray-200 min-w-[700px]">
-                <div className="flex items-center justify-between w-full">
-                    {/* Info de resultados - apenas desktop */}
-                    <div className="hidden sm:flex sm:flex-1 sm:items-center">
-                        <p className="text-sm text-gray-700">
-                            Mostrando <span className="font-medium">{(currentPage - 1) * 10 + 1}</span> até{' '}
-                            <span className="font-medium">{Math.min(currentPage * 10, pieces.length)}</span> de{' '}
-                            <span className="font-medium">{pieces.length}</span> resultados
-                        </p>
-                    </div>
-
-                    {/* Paginação */}
-                    <div className="flex items-center justify-center flex-1 sm:justify-end">
-                        <nav
-                            className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
-                            aria-label="Pagination"
-                        >
-                            {/* Previous Button */}
-                            <button
-                                onClick={handlePreviousPage}
+            {/* Paginação */}
+            {totalPages > 1 && (
+                <div className="px-6 py-4 border-t border-gray-200">
+                    <div className="flex items-center justify-between">
+                        <div className="text-sm text-gray-700">
+                            Página {currentPage} de {totalPages}
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <Button
+                                variant="secondary"
+                                onClick={() => onPageChange(currentPage - 1)}
                                 disabled={currentPage === 1}
-                                className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                                className="px-3 py-2"
                             >
-                                <span className="sr-only">Anterior</span>
-                                <ChevronLeft className="h-5 w-5" />
-                            </button>
-
-                            {/* Page Numbers */}
-                            {renderPageNumbers()}
-
-                            {/* Next Button */}
-                            <button
-                                onClick={handleNextPage}
+                                <ChevronLeft className="w-4 h-4" />
+                            </Button>
+                            <Button
+                                variant="secondary"
+                                onClick={() => onPageChange(currentPage + 1)}
                                 disabled={currentPage === totalPages}
-                                className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                                className="px-3 py-2"
                             >
-                                <span className="sr-only">Próximo</span>
-                                <ChevronRight className="h-5 w-5" />
-                            </button>
-                        </nav>
+                                <ChevronRight className="w-4 h-4" />
+                            </Button>
+                        </div>
                     </div>
                 </div>
-            </div>
+            )}
         </div>
     );
 }

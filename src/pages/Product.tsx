@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { InfoOutlined, ArrowBack } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 // Components
 import Header from '@/components/Header';
@@ -11,34 +11,87 @@ import SelectField from '@/components/ui/SelectField';
 import FileUpload from '@/components/FileUpload';
 
 // Types
-import { CreatePieceData } from '@/types/pieces';
+import { CreatePieceData, Piece } from '@/types/pieces';
 
 // Constants
-import { CUT_TYPES, POSITIONS, DISPLAY_ORDERS, MATERIALS, MATERIAL_COLORS } from '@/constants/system';
+import { CUT_TYPES, MODEL_TYPES, POSITIONS, DISPLAY_ORDERS, MATERIALS, MATERIAL_COLORS } from '@/constants/system';
+
+// Services
+import { recortesService } from '@/services/recortes';
 
 export default function Product() {
     const navigate = useNavigate();
+    const { sku } = useParams<{ sku: string }>();
+    const isEditMode = Boolean(sku);
+
     const [isActive, setIsActive] = useState(true);
     const [formData, setFormData] = useState<CreatePieceData>({
         title: '',
         sku: '',
-        type: 'Americano',
         displayOrder: 1,
         cutType: 'frente',
         position: 'frente',
-        productType: 'boné americano',
+        productType: 'americano', // Atualizado - agora só 'americano' ou 'trucker'
         material: 'linho',
         materialColor: 'azul marinho',
+        isActive: true, // Adicionado
     });
+    const [originalPiece, setOriginalPiece] = useState<Piece | null>(null);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string>('');
     const [isLoading, setIsLoading] = useState(false);
+    const [isLoadingData, setIsLoadingData] = useState(isEditMode);
+    const [error, setError] = useState<string>('');
 
-    // Gerar chave automática baseada nos dados
+    // Carregar dados da peça para edição
+    useEffect(() => {
+        if (isEditMode && sku) {
+            loadPieceData(sku);
+        }
+    }, [isEditMode, sku]);
+
+    const loadPieceData = async (skuToLoad: string) => {
+        setIsLoadingData(true);
+        setError('');
+
+        try {
+            const piece = await recortesService.getRecorteBySku(skuToLoad);
+            setOriginalPiece(piece);
+
+            // Preencher formulário com dados da peça
+            setFormData({
+                title: piece.title,
+                sku: piece.sku,
+                displayOrder: piece.displayOrder,
+                cutType: piece.cutType || 'frente',
+                position: piece.position || 'frente',
+                productType: piece.productType,
+                material: piece.material || 'linho',
+                materialColor: piece.materialColor || 'azul marinho',
+                imageUrl: piece.imageUrl,
+                isActive: piece.isActive !== undefined ? piece.isActive : true, // Mapear status
+                createdAt: piece.createdAt,
+            });
+
+            // Se tem imagem, definir preview
+            if (piece.imageUrl) {
+                setPreviewUrl(piece.imageUrl);
+            }
+
+            setIsActive(piece.isActive !== undefined ? piece.isActive : true);
+        } catch (err) {
+            console.error('Erro ao carregar peça:', err);
+            setError('Erro ao carregar dados da peça. Verifique se o SKU está correto.');
+        } finally {
+            setIsLoadingData(false);
+        }
+    };
+
+    // Gerar chave automática baseada nos dados (atualizado)
     const generateKey = () => {
-        const { cutType, type, material, materialColor } = formData;
-        if (cutType && type && material && materialColor) {
-            return `${cutType}-${type.toLowerCase()}-${material}-${materialColor.replace(' ', '_')}`;
+        const { productType, cutType, material, materialColor } = formData;
+        if (productType && cutType && material && materialColor) {
+            return `${productType}-${cutType}-${material}-${materialColor.replace(' ', '_')}`;
         }
         return '';
     };
@@ -50,31 +103,90 @@ export default function Product() {
         }));
     };
 
+    // Função para lidar com mudanças no SKU com máscara
+    const handleSkuChange = (value: string) => {
+        // Remover todos os caracteres que não são números
+        const numbersOnly = value.replace(/[^0-9]/g, '');
+
+        // Adicionar o # automaticamente
+        const formattedSku = numbersOnly ? `#${numbersOnly}` : '';
+
+        handleInputChange('sku', formattedSku);
+    };
+
     const handleFileSelect = (file: File | null) => {
         setSelectedFile(file);
         if (file) {
             const url = URL.createObjectURL(file);
             setPreviewUrl(url);
         } else {
-            setPreviewUrl('');
+            // Se removeu o arquivo, voltar para a imagem original (se houver)
+            if (formData.imageUrl) {
+                setPreviewUrl(formData.imageUrl);
+            } else {
+                setPreviewUrl('');
+            }
         }
     };
 
     const handleSubmit = async () => {
-        setIsLoading(true);
-        try {
-            // Aqui você implementaria a lógica de envio para a API
-            console.log('Dados do formulário:', formData);
-            console.log('Arquivo selecionado:', selectedFile);
-            console.log('Status ativo:', isActive);
+        // Validações obrigatórias
+        if (!formData.title.trim()) {
+            setError('Nome do modelo é obrigatório');
+            return;
+        }
 
-            // Simular delay de API
-            await new Promise((resolve) => setTimeout(resolve, 2000));
+        if (!formData.sku.trim()) {
+            setError('SKU é obrigatório');
+            return;
+        }
+
+        if (!selectedFile && !formData.imageUrl) {
+            setError('Imagem é obrigatória');
+            return;
+        }
+
+        setIsLoading(true);
+        setError('');
+
+        try {
+            let imageUrl = formData.imageUrl || '';
+
+            // Se há um novo arquivo selecionado, fazer upload primeiro
+            if (selectedFile) {
+                try {
+                    const uploadResponse = await recortesService.uploadImage(selectedFile, {
+                        tipoProduto: formData.productType,
+                        tipoRecorte: formData.cutType || 'frente',
+                        material: formData.material || 'linho',
+                        cor: formData.materialColor || 'azul marinho',
+                    });
+                    imageUrl = uploadResponse.imageUrl;
+                } catch (uploadError) {
+                    console.error('Erro no upload:', uploadError);
+                    throw new Error('Erro ao fazer upload da imagem');
+                }
+            }
+
+            const dataToSave: CreatePieceData = {
+                ...formData,
+                imageUrl,
+                isActive, // Incluir status
+            };
+
+            if (isEditMode && originalPiece) {
+                // Atualizar peça existente
+                await recortesService.updateRecorte(originalPiece.id, dataToSave);
+            } else {
+                // Criar nova peça
+                await recortesService.createRecorte(dataToSave);
+            }
 
             // Navegar de volta para o dashboard
             navigate('/');
-        } catch (error) {
-            console.error('Erro ao criar peça:', error);
+        } catch (err) {
+            console.error('Erro ao salvar peça:', err);
+            setError(err instanceof Error ? err.message : 'Erro ao salvar peça');
         } finally {
             setIsLoading(false);
         }
@@ -83,6 +195,24 @@ export default function Product() {
     const handleDiscard = () => {
         navigate('/');
     };
+
+    // Loading state para carregamento de dados
+    if (isLoadingData) {
+        return (
+            <div className="h-screen bg-gray-50 flex flex-col">
+                <Header variant="primary" />
+                <div className="flex flex-1 overflow-hidden">
+                    <Sidebar />
+                    <main className="flex-1 flex items-center justify-center">
+                        <div className="text-center">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
+                            <p className="text-gray-600">Carregando dados da peça...</p>
+                        </div>
+                    </main>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="h-screen bg-gray-50 flex flex-col">
@@ -102,7 +232,9 @@ export default function Product() {
                             {/* Aviso de informações não salvas */}
                             <div className="flex items-center gap-3">
                                 <InfoOutlined className="w-5 h-5 text-amber-500 flex-shrink-0" />
-                                <span className="text-sm text-gray-700 font-medium">Informações não salvas</span>
+                                <span className="text-sm text-gray-700 font-medium">
+                                    {isEditMode ? 'Editando peça' : 'Informações não salvas'}
+                                </span>
                             </div>
 
                             {/* Botões de ação */}
@@ -113,7 +245,7 @@ export default function Product() {
                                     className="w-full sm:w-auto px-4 py-2 text-sm"
                                     disabled={isLoading}
                                 >
-                                    Descartar
+                                    {isEditMode ? 'Cancelar' : 'Descartar'}
                                 </Button>
                                 <Button
                                     variant="primary"
@@ -121,7 +253,7 @@ export default function Product() {
                                     isLoading={isLoading}
                                     className="w-full sm:w-auto px-4 py-2 text-sm"
                                 >
-                                    {isLoading ? 'Salvando...' : 'Salvar'}
+                                    {isLoading ? 'Salvando...' : isEditMode ? 'Atualizar' : 'Salvar'}
                                 </Button>
                             </div>
                         </div>
@@ -129,6 +261,13 @@ export default function Product() {
 
                     {/* Scrollable Content Container */}
                     <div className="flex-1 overflow-y-auto px-4 lg:px-6">
+                        {/* Error Message */}
+                        {error && (
+                            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6 mt-6">
+                                <p className="text-red-800 text-sm">{error}</p>
+                            </div>
+                        )}
+
                         {/* Seção de informações do produto */}
                         <div className="rounded-lg p-4 lg:p-6 mb-6 lg:mb-8">
                             <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
@@ -142,10 +281,26 @@ export default function Product() {
                                     </button>
                                     <div className="min-w-0 flex-1">
                                         <h1 className="text-lg lg:text-xl font-bold text-gray-900 truncate">
-                                            Modelo {formData.type}
+                                            {isEditMode
+                                                ? `Editar: ${formData.title || 'Peça'}`
+                                                : `Modelo ${formData.productType}`}
                                         </h1>
                                         <p className="text-sm text-gray-600 truncate">
-                                            {formData.title || 'Novo produto'}
+                                            {isEditMode && formData.createdAt
+                                                ? `Criado em: ${new Date(formData.createdAt).toLocaleDateString(
+                                                      'pt-BR',
+                                                      {
+                                                          day: 'numeric',
+                                                          month: 'short',
+                                                          year: 'numeric',
+                                                      },
+                                                  )}, ${new Date(formData.createdAt).toLocaleTimeString('pt-BR', {
+                                                      hour: '2-digit',
+                                                      minute: '2-digit',
+                                                      hour12: false,
+                                                      timeZone: 'America/Sao_Paulo',
+                                                  })}`
+                                                : formData.title || 'Novo Modelo'}
                                         </p>
                                     </div>
                                 </div>
@@ -154,7 +309,6 @@ export default function Product() {
                                 <div className="flex items-center justify-between lg:justify-center gap-4 px-4 py-3 bg-gray-50 rounded-lg border border-gray-200 flex-shrink-0">
                                     <span className="text-base font-medium text-gray-700">Status:</span>
                                     <div className="flex items-center gap-3">
-                                        {/* Texto com largura fixa para evitar movimento */}
                                         <span
                                             className="text-sm text-gray-600 inline-block"
                                             style={{ width: 60, textAlign: 'center' }}
@@ -197,24 +351,23 @@ export default function Product() {
                                     <h2 className="text-lg font-semibold text-gray-900 mb-6">Especificações</h2>
 
                                     <div className="space-y-6">
-                                        {/* Nome do Modelo */}
+                                        {/* Tipo e Nome do Modelo */}
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <SelectField
+                                                label="Tipo do Modelo *"
+                                                value={formData.productType}
+                                                onChange={(e) => handleInputChange('productType', e.target.value)}
+                                                options={MODEL_TYPES}
+                                            />
                                             <InputField
-                                                label="Nome do Modelo"
+                                                label="Nome do Modelo *"
                                                 value={formData.title}
                                                 onChange={(e) => handleInputChange('title', e.target.value)}
                                                 placeholder="Digite o nome do modelo"
                                             />
-
-                                            <SelectField
-                                                label="Tipo do recorte"
-                                                value={formData.cutType}
-                                                onChange={(e) => handleInputChange('cutType', e.target.value)}
-                                                options={CUT_TYPES}
-                                            />
                                         </div>
 
-                                        {/* Posição e Ordem */}
+                                        {/* Posição e Tipo de corte */}
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                             <SelectField
                                                 label="Posição da imagem"
@@ -224,12 +377,10 @@ export default function Product() {
                                             />
 
                                             <SelectField
-                                                label="Ordem de exibição"
-                                                value={formData.displayOrder}
-                                                onChange={(e) =>
-                                                    handleInputChange('displayOrder', parseInt(e.target.value))
-                                                }
-                                                options={DISPLAY_ORDERS}
+                                                label="Tipo do recorte"
+                                                value={formData.cutType}
+                                                onChange={(e) => handleInputChange('cutType', e.target.value)}
+                                                options={CUT_TYPES}
                                             />
                                         </div>
 
@@ -257,11 +408,47 @@ export default function Product() {
                                     <h2 className="text-lg font-semibold text-gray-900 mb-6">Dados do produto</h2>
 
                                     <div className="space-y-6">
-                                        <InputField
-                                            label="SKU"
-                                            value={formData.sku}
-                                            onChange={(e) => handleInputChange('sku', e.target.value)}
-                                            placeholder="Digite o SKU"
+                                        {/* SKU com máscara personalizada */}
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                SKU *
+                                            </label>
+                                            <div className="relative">
+                                                <input
+                                                    type="text"
+                                                    value={formData.sku}
+                                                    onChange={(e) => handleSkuChange(e.target.value)}
+                                                    placeholder="#000000"
+                                                    disabled={isEditMode} // SKU não pode ser editado
+                                                    className={`
+                                                        w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm 
+                                                        focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
+                                                        font-mono text-sm
+                                                        ${
+                                                            isEditMode
+                                                                ? 'bg-gray-50 text-gray-500 cursor-not-allowed'
+                                                                : 'bg-white'
+                                                        }
+                                                    `}
+                                                    maxLength={10} // # + até 9 dígitos
+                                                />
+                                                {/* Indicador visual do # sempre presente */}
+                                                <div className="absolute left-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                                                    <span className="text-gray-400 font-mono text-sm">#</span>
+                                                </div>
+                                            </div>
+                                            <p className="mt-1 text-xs text-gray-500">
+                                                Digite apenas os números. O símbolo # será adicionado automaticamente.
+                                            </p>
+                                        </div>
+
+                                        <SelectField
+                                            label="Ordem de exibição"
+                                            value={formData.displayOrder}
+                                            onChange={(e) =>
+                                                handleInputChange('displayOrder', parseInt(e.target.value))
+                                            }
+                                            options={DISPLAY_ORDERS}
                                         />
 
                                         {/* Chave gerada */}
@@ -279,13 +466,19 @@ export default function Product() {
 
                             {/* Segunda linha - Upload de mídia (largura total) */}
                             <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
-                                <h2 className="text-lg font-semibold text-gray-900 mb-6">Mídia</h2>
+                                <h2 className="text-lg font-semibold text-gray-900 mb-6">Mídia *</h2>
 
                                 <FileUpload
                                     onFileSelect={handleFileSelect}
                                     previewUrl={previewUrl}
                                     accept="image/*"
                                     maxSize={5}
+                                    title={previewUrl ? 'Alterar imagem' : 'Carregar imagem'}
+                                    subtitle={
+                                        previewUrl
+                                            ? 'Escolha uma nova imagem ou arraste e solte aqui'
+                                            : 'Escolha um arquivo ou arraste e solte aqui'
+                                    }
                                 />
                             </div>
                         </div>

@@ -5,10 +5,10 @@ export const CUT_TYPES = [
     { value: 'lateral', label: 'Lateral' },
 ];
 
-// Modelos disponíveis
+// Modelos disponíveis (atualizado - apenas americano/trucker)
 export const MODEL_TYPES = [
-    { value: 'Americano', label: 'Americano' },
-    { value: 'Trucker', label: 'Trucker' },
+    { value: 'americano', label: 'Americano' },
+    { value: 'trucker', label: 'Trucker' },
 ];
 
 // Posições disponíveis
@@ -17,10 +17,10 @@ export const POSITIONS = [
     { value: 'traseira', label: 'Traseira' },
 ];
 
-// Tipos de produto
+// Tipos de produto (atualizado - apenas americano/trucker)
 export const PRODUCT_TYPES = [
-    { value: 'boné americano', label: 'Boné Americano' },
-    { value: 'boné trucker', label: 'Boné Trucker' },
+    { value: 'americano', label: 'Americano' },
+    { value: 'trucker', label: 'Trucker' },
 ];
 
 // Materiais disponíveis

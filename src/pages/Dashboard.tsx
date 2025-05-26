@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FilterList } from '@mui/icons-material';
 
@@ -9,25 +9,89 @@ import Button from '@/components/ui/Button';
 import InputSearch from '@/components/ui/InputSearch';
 import PiecesTable from '@/components/PiecesTable';
 
-// Utilities
-import { mockPieces } from '@/utils/mockPieces';
+// Types
+import { Piece } from '@/types/pieces';
+
+// Services
+import { recortesService } from '@/services/recortes';
 
 export default function Dashboard() {
     const navigate = useNavigate();
     const [activeFilter, setActiveFilter] = useState('todos');
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
+    const [pieces, setPieces] = useState<Piece[]>([]);
+    const [totalPages, setTotalPages] = useState(1);
+    const [, setTotal] = useState(0);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string>('');
+
+    // Função para carregar as peças
+    const loadPieces = async () => {
+        setIsLoading(true);
+        setError('');
+
+        try {
+            const params = {
+                page: currentPage,
+                limit: 10,
+                sortBy: 'ordem',
+                sortOrder: 'asc' as const,
+                ...(searchTerm.trim() && { search: searchTerm.trim() }),
+            };
+
+            const response = await recortesService.getRecortes(params);
+
+            setPieces(response.pieces);
+            setTotalPages(response.totalPages);
+            setTotal(response.total);
+        } catch (err) {
+            console.error('Erro ao carregar peças:', err);
+            setError('Erro ao carregar peças. Tente novamente.');
+            setPieces([]);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    // Carregar peças quando a página ou filtros mudarem
+    useEffect(() => {
+        loadPieces();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [currentPage, searchTerm]);
+
+    // Função para recarregar após exclusão
+    const handleDeleteSuccess = () => {
+        loadPieces();
+    };
 
     const handleFilterChange = (filter: string) => {
         setActiveFilter(filter);
+        setCurrentPage(1); // Reset para primeira página ao mudar filtro
     };
 
     const handleSearch = (value: string) => {
         setSearchTerm(value);
+        setCurrentPage(1); // Reset para primeira página ao pesquisar
     };
 
     const handlePageChange = (page: number) => {
         setCurrentPage(page);
+    };
+
+    // Filtrar peças por status no frontend (já que a API não tem esse campo)
+    const filteredPieces = pieces.filter((piece) => {
+        if (activeFilter === 'todos') return true;
+        if (activeFilter === 'ativos') return piece.status === 'Ativo';
+        if (activeFilter === 'expirado') return piece.status === 'Expirado';
+        return true;
+    });
+
+    // Contar peças por status
+    const counts = {
+        todos: pieces.length,
+        ativos: pieces.filter((p) => p.status === 'Ativo').length,
+        expirado: pieces.filter((p) => p.status === 'Expirado').length,
     };
 
     return (
@@ -63,7 +127,7 @@ export default function Dashboard() {
                                             : 'text-gray-600 hover:text-gray-900'
                                     }`}
                                 >
-                                    Todos (000)
+                                    Todos ({counts.todos})
                                 </button>
                                 <button
                                     onClick={() => handleFilterChange('ativos')}
@@ -73,7 +137,7 @@ export default function Dashboard() {
                                             : 'text-gray-600 hover:text-gray-900'
                                     }`}
                                 >
-                                    Ativos (0)
+                                    Ativos ({counts.ativos})
                                 </button>
                                 <button
                                     onClick={() => handleFilterChange('expirado')}
@@ -83,7 +147,7 @@ export default function Dashboard() {
                                             : 'text-gray-600 hover:text-gray-900'
                                     }`}
                                 >
-                                    Expirado (0)
+                                    Inativos ({counts.expirado})
                                 </button>
                             </div>
                         </div>
@@ -105,17 +169,53 @@ export default function Dashboard() {
                             </Button>
                         </div>
 
-                        {/* Table Container */}
-                        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                            <div className="overflow-x-auto">
-                                <PiecesTable
-                                    pieces={mockPieces}
-                                    currentPage={currentPage}
-                                    totalPages={4}
-                                    onPageChange={handlePageChange}
-                                />
+                        {/* Error State */}
+                        {error && (
+                            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                                <p className="text-red-800 text-sm">{error}</p>
+                                <Button variant="secondary" onClick={loadPieces} className="mt-2">
+                                    Tentar novamente
+                                </Button>
                             </div>
-                        </div>
+                        )}
+
+                        {/* Loading State */}
+                        {isLoading && (
+                            <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                                <div className="p-8 text-center">
+                                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
+                                    <p className="text-gray-600">Carregando peças...</p>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Table Container */}
+                        {!isLoading && !error && (
+                            <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                                {filteredPieces.length === 0 ? (
+                                    <div className="p-8 text-center">
+                                        <p className="text-gray-600 mb-4">
+                                            {searchTerm
+                                                ? 'Nenhuma peça encontrada para sua busca.'
+                                                : 'Nenhuma peça cadastrada.'}
+                                        </p>
+                                        <Button variant="primary" onClick={() => navigate('/criar')}>
+                                            Adicionar primeira peça
+                                        </Button>
+                                    </div>
+                                ) : (
+                                    <div className="overflow-x-auto">
+                                        <PiecesTable
+                                            pieces={filteredPieces}
+                                            currentPage={currentPage}
+                                            totalPages={totalPages}
+                                            onPageChange={handlePageChange}
+                                            onDeleteSuccess={handleDeleteSuccess}
+                                        />
+                                    </div>
+                                )}
+                            </div>
+                        )}
 
                         {/* Espaçamento extra para mobile */}
                         <div className="h-20 lg:h-8"></div>

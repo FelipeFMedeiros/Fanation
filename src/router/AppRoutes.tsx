@@ -42,6 +42,15 @@ export default function AppRouter() {
                         }
                     />
 
+                    <Route
+                        path="/editar/:sku"
+                        element={
+                            <PrivateRoute>
+                                <Product />
+                            </PrivateRoute>
+                        }
+                    />
+
                     {/* Rota catch-all - redireciona para dashboard se autenticado */}
                     <Route
                         path="*"
