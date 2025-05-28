@@ -1,16 +1,13 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ArrowBack, FileDownload, InfoOutlined } from '@mui/icons-material';
-
 // Components
 import Header from '@/components/Header';
 import Sidebar from '@/components/Sidebar';
 import Button from '@/components/ui/Button';
 import LayeredPiecesTable from '@/components/LayeredPiecesTable';
-
 // Types
 import { Piece } from '@/types/pieces';
-
 // Services
 import { recortesService } from '@/services/recortes';
 
@@ -19,7 +16,6 @@ export default function ImageGenerator() {
     const location = useLocation();
     const canvasRef = useRef<HTMLCanvasElement>(null);
 
-    // Fix 1: Use useMemo to prevent selectedSKUs from changing on every render
     const selectedSKUs = useMemo(() => {
         return (location.state?.selectedPieces as string[]) || [];
     }, [location.state?.selectedPieces]);
@@ -30,7 +26,7 @@ export default function ImageGenerator() {
     const [error, setError] = useState('');
     const [generatedImageUrl, setGeneratedImageUrl] = useState('');
 
-    // Load piece data for the selected SKUs
+    // Carrega as peças selecionadas ao montar o componente
     useEffect(() => {
         const loadPieces = async () => {
             setIsLoading(true);
@@ -43,12 +39,11 @@ export default function ImageGenerator() {
                     return;
                 }
 
-                // Fix 2: Add explicit type for 'sku'
                 const piecesData = await Promise.all(
                     selectedSKUs.map((sku: string) => recortesService.getRecorteBySku(sku)),
                 );
 
-                // Sort by display order (lower numbers first, to be at the bottom layer)
+                // Organiza as peças por ordem de exibição
                 piecesData.sort((a, b) => a.displayOrder - b.displayOrder);
                 setPieces(piecesData);
             } catch (err) {
@@ -62,12 +57,12 @@ export default function ImageGenerator() {
         loadPieces();
     }, [selectedSKUs]);
 
-    // Generate the composite image whenever pieces change
+    // Gera a imagem composta quando as peças são carregadas
     useEffect(() => {
         if (pieces.length === 0) return;
 
         const canvas = canvasRef.current;
-        // Fix 3: Early return if canvas is null
+
         if (!canvas) {
             console.error('Canvas element not found');
             return;
@@ -83,10 +78,10 @@ export default function ImageGenerator() {
                     throw new Error('Could not get canvas context');
                 }
 
-                // Clear canvas
+                // Clear no canvas
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-                // Load all images
+                // Carrega as imagens de cada peça
                 const loadImage = (url: string): Promise<HTMLImageElement> => {
                     return new Promise((resolve, reject) => {
                         const img = new Image();
@@ -97,7 +92,7 @@ export default function ImageGenerator() {
                     });
                 };
 
-                // Set initial canvas dimensions - we'll use the first image's size
+                // Seta as dimensões do canvas com a primeira imagem válida
                 const firstPiece = pieces.find((p) => p.imageUrl);
                 if (!firstPiece?.imageUrl) {
                     throw new Error('No valid images to display');
@@ -107,7 +102,7 @@ export default function ImageGenerator() {
                 canvas.width = firstImg.width;
                 canvas.height = firstImg.height;
 
-                // Load and layer the images in order
+                // Carrega e desenha cada imagem no canvas
                 for (const piece of pieces) {
                     if (piece.imageUrl) {
                         try {
@@ -120,7 +115,7 @@ export default function ImageGenerator() {
                     }
                 }
 
-                // Convert the canvas to a data URL
+                // Converte o canvas para uma URL de dados
                 const dataUrl = canvas.toDataURL('image/png');
                 setGeneratedImageUrl(dataUrl);
             } catch (err) {
@@ -134,6 +129,7 @@ export default function ImageGenerator() {
         generateImage();
     }, [pieces]);
 
+    // Funções para manipular a ordem das peças
     const handleReorder = (fromIndex: number, toIndex: number) => {
         if (fromIndex === toIndex) return;
 
@@ -148,7 +144,7 @@ export default function ImageGenerator() {
         setPieces(pieces.filter((p) => p.id !== pieceId));
     };
 
-    // Handle download of generated image
+    // Função para baixar a imagem gerada
     const handleDownload = () => {
         if (!generatedImageUrl) return;
 
@@ -177,9 +173,10 @@ export default function ImageGenerator() {
                             <div className="flex items-center gap-3">
                                 <button
                                     onClick={() => navigate('/visualizacao')}
-                                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+                                    className="group p-2 rounded-lg transition-colors duration-200 cursor-pointer"
+                                    type="button"
                                 >
-                                    <ArrowBack className="w-5 h-5 text-gray-600" />
+                                    <ArrowBack className="w-5 h-5 text-gray-600 group-hover:text-black transition-colors duration-200" />
                                 </button>
                                 <div>
                                     <h1 className="text-xl lg:text-2xl font-bold text-gray-900">
@@ -236,9 +233,9 @@ export default function ImageGenerator() {
                         )}
 
                         {!isLoading && !error && (
-                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
                                 {/* Left Column - Table */}
-                                <div className="lg:col-span-1">
+                                <div className="lg:col-span-2">
                                     <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
                                         <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
                                             <h2 className="font-semibold text-gray-900">Camadas</h2>
@@ -261,15 +258,15 @@ export default function ImageGenerator() {
                                                 Arraste as peças para alterar a ordem das camadas.
                                             </p>
                                             <p className="text-xs text-gray-500 flex items-center gap-1">
-                                                <InfoOutlined fontSize="small" className="text-blue-400" />
-                                                A camada 1 fica na base da imagem, as superiores sobrepõem as inferiores.
+                                                <InfoOutlined fontSize="small" className="text-blue-400" />A camada 1
+                                                fica na base da imagem, as superiores sobrepõem as inferiores.
                                             </p>
                                         </div>
                                     </div>
                                 </div>
 
                                 {/* Right Column - Generated Image */}
-                                <div className="lg:col-span-2">
+                                <div className="lg:col-span-3">
                                     <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
                                         <div className="px-4 py-3 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
                                             <h2 className="font-semibold text-gray-900">Visualização</h2>
@@ -310,7 +307,7 @@ export default function ImageGenerator() {
                             </div>
                         )}
 
-                        {/* Extra spacing for mobile */}
+                        {/* Espaçamento para o mobile */}
                         <div className="h-20 lg:h-8"></div>
                     </div>
                 </main>

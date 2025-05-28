@@ -1,9 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Close, FilterList } from '@mui/icons-material';
-
 // Components
 import Button from './ui/Button';
-
 // Constants
 import { CUT_TYPES, PRODUCT_TYPES, MATERIALS, MATERIAL_COLORS } from '@/constants/system';
 
