@@ -163,10 +163,11 @@ export default function Login() {
 
             {/* Footer fixo na parte inferior */}
             <footer className="py-4 mt-auto">
-                <div className="text-center">
-                    <p className="text-xs text-gray-400">
-                        Desenvolvido pela <span className="font-medium text-gray-600">SeuBonê</span>
-                    </p>
+                <div className="text-center flex flex-col items-center justify-center">
+                    <div className="flex items-center justify-center gap-2">
+                        <span className="text-xs text-gray-400">Desenvolvido pela</span>
+                        <img src="/logo-seubone.png" alt="SeuBonê" className="h-5 w-auto" style={{ maxWidth: 100 }} />
+                    </div>
                 </div>
             </footer>
         </div>

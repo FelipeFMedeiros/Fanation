@@ -7,7 +7,7 @@ import Header from '@/components/Header';
 import Sidebar from '@/components/Sidebar';
 import Button from '@/components/ui/Button';
 import InputSearch from '@/components/ui/InputSearch';
-import PiecesTable from '@/components/PiecesTable';
+import SelectablePiecesTable from '@/components/SelectablePiecesTable';
 import FilterDropdown from '@/components/FilterDropdown';
 
 // Types
@@ -16,10 +16,9 @@ import { Piece } from '@/types/pieces';
 // Services
 import { recortesService } from '@/services/recortes';
 
-export default function Dashboard() {
-    const navigate = useNavigate();
+export default function Visualization() {
     const filterButtonRef = useRef<HTMLButtonElement>(null);
-
+    const navigate = useNavigate();
     const [activeFilter, setActiveFilter] = useState('todos');
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
@@ -38,7 +37,10 @@ export default function Dashboard() {
         cor: '',
     });
 
-    // Estados para armazenar contagens (considerando filtros e pesquisa)
+    // State for selected pieces
+    const [selectedPieces, setSelectedPieces] = useState<string[]>([]);
+
+    // State for global counts
     const [globalCounts, setGlobalCounts] = useState({
         todos: 0,
         ativos: 0,
@@ -46,14 +48,14 @@ export default function Dashboard() {
     });
     const [isLoadingCounts, setIsLoadingCounts] = useState(false);
 
-    // Função para carregar contagens considerando filtros e pesquisa
+    // Function to load counts considering filters and search
     const loadFilteredCounts = async () => {
         setIsLoadingCounts(true);
         try {
-            // Parâmetros base (filtros e pesquisa, mas sem o status)
+            // Base parameters (filters and search, but without status)
             const baseParams = {
                 page: 1,
-                limit: 1, // Só precisamos do total
+                limit: 1,
                 ...(searchTerm.trim() && { search: searchTerm.trim() }),
                 ...(filters.tipoRecorte && { tipoRecorte: filters.tipoRecorte }),
                 ...(filters.tipoProduto && { tipoProduto: filters.tipoProduto }),
@@ -61,11 +63,11 @@ export default function Dashboard() {
                 ...(filters.cor && { cor: filters.cor }),
             };
 
-            // Buscar contagens com os filtros aplicados
+            // Get counts with applied filters
             const [todosResponse, ativosResponse, inativosResponse] = await Promise.all([
-                recortesService.getRecortes(baseParams), // Todos
-                recortesService.getRecortes({ ...baseParams, status: true }), // Ativos
-                recortesService.getRecortes({ ...baseParams, status: false }), // Inativos
+                recortesService.getRecortes(baseParams),
+                recortesService.getRecortes({ ...baseParams, status: true }),
+                recortesService.getRecortes({ ...baseParams, status: false }),
             ]);
 
             setGlobalCounts({
@@ -75,13 +77,12 @@ export default function Dashboard() {
             });
         } catch (err) {
             console.error('Erro ao carregar contagens:', err);
-            // Manter contagens anteriores em caso de erro
         } finally {
             setIsLoadingCounts(false);
         }
     };
 
-    // Função para carregar as peças
+    // Function to load pieces
     const loadPieces = async () => {
         setIsLoading(true);
         setError('');
@@ -115,32 +116,26 @@ export default function Dashboard() {
         }
     };
 
-    // Carregar contagens quando filtros ou pesquisa mudarem
+    // Load counts when filters or search change
     useEffect(() => {
         loadFilteredCounts();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [searchTerm, filters]);
 
-    // Carregar peças quando a página ou filtros mudarem
+    // Load pieces when page or filters change
     useEffect(() => {
         loadPieces();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentPage, searchTerm, activeFilter, sortBy, sortOrder, filters]);
 
-    // Função para recarregar após exclusão
-    const handleDeleteSuccess = () => {
-        loadPieces();
-        loadFilteredCounts(); // Recarregar contagens também
-    };
-
     const handleFilterChange = (filter: string) => {
         setActiveFilter(filter);
-        setCurrentPage(1); // Reset para primeira página ao mudar filtro
+        setCurrentPage(1);
     };
 
     const handleSearch = (value: string) => {
         setSearchTerm(value);
-        setCurrentPage(1); // Reset para primeira página ao pesquisar
+        setCurrentPage(1);
     };
 
     const handlePageChange = (page: number) => {
@@ -170,7 +165,7 @@ export default function Dashboard() {
         setShowFilterDropdown(false);
     };
 
-    // Função para limpar todos os filtros (incluindo pesquisa)
+    // Function to clear all filters (including search)
     const handleClearAllFilters = () => {
         setSearchTerm('');
         setFilters({
@@ -184,7 +179,28 @@ export default function Dashboard() {
         setShowFilterDropdown(false);
     };
 
-    // Verificar se há filtros ativos
+    // Handle selection of pieces
+    const handleSelectPiece = (sku: string) => {
+        setSelectedPieces((prevSelected) => {
+            if (prevSelected.includes(sku)) {
+                return prevSelected.filter((s) => s !== sku);
+            } else {
+                return [...prevSelected, sku];
+            }
+        });
+    };
+
+    // Generate image function
+    const handleGenerateImage = () => {
+        if (selectedPieces.length === 0) return;
+
+        // Navigate to the image generator page with selected SKUs as state
+        navigate('/visualizacao/gerador', {
+            state: { selectedPieces },
+        });
+    };
+
+    // Check if any filters are active
     const hasActiveFilters = Object.values(filters).some((value) => value !== '');
     const hasAnyFilter = hasActiveFilters || searchTerm.trim() !== '';
 
@@ -205,9 +221,9 @@ export default function Dashboard() {
                         {/* Page Header */}
                         <div className="flex flex-col gap-4 mb-6 lg:mb-8 lg:flex-row lg:items-center lg:justify-between">
                             <div>
-                                <h1 className="text-xl lg:text-2xl font-bold text-gray-900">Peças gerais</h1>
+                                <h1 className="text-xl lg:text-2xl font-bold text-gray-900">Visualização de Peças</h1>
                                 <p className="text-sm text-gray-600 mt-1">
-                                    {hasAnyFilter ? 'Resultados filtrados' : 'Gerencie todas as peças do seu catálogo'}
+                                    {hasAnyFilter ? 'Resultados filtrados' : 'Selecione peças para gerar visualizações'}
                                 </p>
                             </div>
                             <div className="flex gap-2">
@@ -223,13 +239,14 @@ export default function Dashboard() {
                                 <Button
                                     variant="primary"
                                     className="w-full lg:w-auto"
-                                    onClick={() => navigate('/criar')}
+                                    onClick={handleGenerateImage}
+                                    disabled={selectedPieces.length === 0}
                                 >
-                                    Adicionar peça
+                                    Gerar Imagem
+                                    {selectedPieces.length > 0 && ` (${selectedPieces.length})`}
                                 </Button>
                             </div>
                         </div>
-
                         {/* Filter Tabs */}
                         <div className="mb-6">
                             <div className="flex items-center gap-2 lg:gap-4 overflow-x-auto pb-2 scrollbar-none">
@@ -295,7 +312,6 @@ export default function Dashboard() {
                                 </button>
                             </div>
                         </div>
-
                         {/* Search and Filter Bar */}
                         <div className="flex gap-3 mb-4 lg:mb-6 relative">
                             <div className="flex-1 min-w-0">
@@ -336,8 +352,7 @@ export default function Dashboard() {
                                 />
                             </div>
                         </div>
-
-                        {/* Mostrar informações sobre filtros aplicados */}
+                        {/* Filter information */}
                         {hasAnyFilter && !isLoading && !error && (
                             <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                                 <div className="flex items-center justify-between flex-wrap gap-2">
@@ -361,7 +376,6 @@ export default function Dashboard() {
                                 </div>
                             </div>
                         )}
-
                         {/* Error State */}
                         {error && (
                             <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
@@ -371,7 +385,6 @@ export default function Dashboard() {
                                 </Button>
                             </div>
                         )}
-
                         {/* Loading State */}
                         {isLoading && (
                             <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
@@ -381,7 +394,6 @@ export default function Dashboard() {
                                 </div>
                             </div>
                         )}
-
                         {/* Table Container */}
                         {!isLoading && !error && (
                             <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
@@ -395,40 +407,68 @@ export default function Dashboard() {
                                                 ? 'Nenhuma peça encontrada com os filtros aplicados.'
                                                 : 'Nenhuma peça cadastrada.'}
                                         </p>
-                                        {hasAnyFilter ? (
-                                            <div className="flex gap-2 justify-center">
-                                                <Button variant="secondary" onClick={handleClearAllFilters}>
-                                                    Limpar filtros
-                                                </Button>
-                                                <Button variant="primary" onClick={() => navigate('/criar')}>
-                                                    Adicionar peça
-                                                </Button>
-                                            </div>
-                                        ) : (
-                                            <Button variant="primary" onClick={() => navigate('/criar')}>
-                                                Adicionar primeira peça
+                                        {hasAnyFilter && (
+                                            <Button variant="secondary" onClick={handleClearAllFilters}>
+                                                Limpar filtros
                                             </Button>
                                         )}
                                     </div>
                                 ) : (
                                     <div className="overflow-x-auto">
-                                        <PiecesTable
+                                        <SelectablePiecesTable
                                             pieces={pieces}
                                             currentPage={currentPage}
                                             totalPages={totalPages}
                                             onPageChange={handlePageChange}
-                                            onDeleteSuccess={handleDeleteSuccess}
                                             sortBy={sortBy}
                                             sortOrder={sortOrder}
                                             onSortChange={handleSortChange}
+                                            selectedPieces={selectedPieces}
+                                            onSelectPiece={handleSelectPiece}
                                         />
                                     </div>
                                 )}
                             </div>
                         )}
+                        {selectedPieces.length > 0 && (
+                            <div className="fixed bottom-0 inset-x-0 z-10">
+                                {/* This div accounts for the sidebar on larger screens */}
+                                <div className="lg:pl-64 transition-all duration-300">
+                                    <div className="bg-blue-600 text-white py-3 px-4 shadow-lg">
+                                        <div className="container mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 max-w-7xl">
+                                            <div className="flex items-center">
+                                                <span className="font-medium text-sm sm:text-base">
+                                                    {selectedPieces.length}{' '}
+                                                    {selectedPieces.length === 1
+                                                        ? 'peça selecionada'
+                                                        : 'peças selecionadas'}
+                                                </span>
+                                            </div>
+                                            <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3 w-full sm:w-auto">
+                                                {/* On mobile, Limpar seleção goes full width above the button */}
+                                                <button
+                                                    onClick={() => setSelectedPieces([])}
+                                                    className="text-xs sm:text-sm text-white hover:text-blue-100 font-medium underline whitespace-nowrap w-full sm:w-auto order-1 sm:order-none"
+                                                >
+                                                    Limpar seleção
+                                                </button>
+                                                <Button
+                                                    variant="secondary"
+                                                    size="sm"
+                                                    onClick={handleGenerateImage}
+                                                    className="whitespace-nowrap w-full sm:w-auto"
+                                                >
+                                                    Gerar Imagem
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
 
-                        {/* Espaçamento extra para mobile */}
-                        <div className="h-20 lg:h-8"></div>
+                        {/* Extra spacing for mobile */}
+                        <div className={`h-20 ${selectedPieces.length > 0 ? 'mb-14' : ''}`}></div>
                     </div>
                 </main>
             </div>

@@ -1,6 +1,4 @@
 import axios, { AxiosInstance, AxiosResponse, AxiosError } from 'axios';
-
-// Types
 import { LoginRequest, LoginResponse, UserInfo } from '@/types/api';
 
 class ApiService {
@@ -48,6 +46,8 @@ class ApiService {
         );
     }
 
+    // =============== MÉTODOS DE AUTENTICAÇÃO ===============
+
     // Método para fazer login
     async login(password: string): Promise<LoginResponse> {
         try {
@@ -82,16 +82,19 @@ class ApiService {
         }
     }
 
-    // Método genérico para outras requisições (futuro uso)
-    async get<T>(endpoint: string): Promise<T> {
+    // =============== MÉTODOS HTTP GENÉRICOS ===============
+
+    async get<T>(endpoint: string, params?: Record<string, unknown>): Promise<T> {
         try {
-            const response = await this.api.get<T>(endpoint);
+            const response = await this.api.get<T>(endpoint, { params });
             return response.data;
         } catch (error) {
             if (axios.isAxiosError(error)) {
-                throw new Error(error.response?.data?.message || 'Erro na requisição');
+                const errorMessage =
+                    error.response?.data?.message || error.response?.data?.error || 'Erro na requisição';
+                throw new Error(errorMessage);
             }
-            throw error;
+            throw new Error('Erro interno do servidor');
         }
     }
 
@@ -101,9 +104,29 @@ class ApiService {
             return response.data;
         } catch (error) {
             if (axios.isAxiosError(error)) {
-                throw new Error(error.response?.data?.message || 'Erro na requisição');
+                const errorMessage =
+                    error.response?.data?.message || error.response?.data?.error || 'Erro na requisição';
+                throw new Error(errorMessage);
             }
-            throw error;
+            throw new Error('Erro interno do servidor');
+        }
+    }
+
+    async postFormData<T>(endpoint: string, formData: FormData): Promise<T> {
+        try {
+            const response = await this.api.post<T>(endpoint, formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            return response.data;
+        } catch (error) {
+            if (axios.isAxiosError(error)) {
+                const errorMessage =
+                    error.response?.data?.message || error.response?.data?.error || 'Erro na requisição';
+                throw new Error(errorMessage);
+            }
+            throw new Error('Erro interno do servidor');
         }
     }
 
@@ -113,21 +136,43 @@ class ApiService {
             return response.data;
         } catch (error) {
             if (axios.isAxiosError(error)) {
-                throw new Error(error.response?.data?.message || 'Erro na requisição');
+                const errorMessage =
+                    error.response?.data?.message || error.response?.data?.error || 'Erro na requisição';
+                throw new Error(errorMessage);
             }
-            throw error;
+            throw new Error('Erro interno do servidor');
         }
     }
 
-    async delete<T>(endpoint: string): Promise<T> {
+    async putFormData<T>(endpoint: string, formData: FormData): Promise<T> {
+        try {
+            const response = await this.api.put<T>(endpoint, formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            return response.data;
+        } catch (error) {
+            if (axios.isAxiosError(error)) {
+                const errorMessage =
+                    error.response?.data?.message || error.response?.data?.error || 'Erro na requisição';
+                throw new Error(errorMessage);
+            }
+            throw new Error('Erro interno do servidor');
+        }
+    }
+
+    async delete<T = void>(endpoint: string): Promise<T> {
         try {
             const response = await this.api.delete<T>(endpoint);
             return response.data;
         } catch (error) {
             if (axios.isAxiosError(error)) {
-                throw new Error(error.response?.data?.message || 'Erro na requisição');
+                const errorMessage =
+                    error.response?.data?.message || error.response?.data?.error || 'Erro na requisição';
+                throw new Error(errorMessage);
             }
-            throw error;
+            throw new Error('Erro interno do servidor');
         }
     }
 }
