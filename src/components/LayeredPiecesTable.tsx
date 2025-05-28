@@ -1,11 +1,12 @@
 import { Delete } from '@mui/icons-material';
+import { DndProvider, useDrag, useDrop } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
+
+// Components
+import PieceItemDisplay from './table/PieceItemDisplay';
 
 // Types
 import { Piece } from '@/types/pieces';
-
-// For drag-and-drop functionality
-import { DndProvider, useDrag, useDrop } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
 
 interface LayeredPiecesTableProps {
     pieces: Piece[];
@@ -69,32 +70,7 @@ const DraggableRow = ({
             `}
         >
             <td className="px-6 py-3 whitespace-nowrap">
-                <div className="flex items-center">
-                    <div className="flex-shrink-0 h-10 w-10 mr-3 relative">
-                        {/* Add subtle scale effect on hover */}
-                        <div className="transition-transform duration-200 group-hover:scale-105">
-                            {piece.imageUrl ? (
-                                <img
-                                    className="h-10 w-10 rounded-lg object-cover border border-gray-200"
-                                    src={piece.imageUrl}
-                                    alt={piece.title}
-                                />
-                            ) : (
-                                <div className="h-10 w-10 bg-gray-100 rounded-lg flex items-center justify-center border border-gray-200">
-                                    <span className="text-gray-400 text-xs font-medium">IMG</span>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                    <div>
-                        <div className="text-sm font-medium text-gray-900 group-hover:text-blue-700 transition-colors duration-200">
-                            {piece.title}
-                        </div>
-                        <div className="text-xs text-gray-500 group-hover:text-gray-700 transition-colors duration-200">
-                            SKU: {piece.sku}
-                        </div>
-                    </div>
-                </div>
+                <PieceItemDisplay piece={piece} compact={true} />
             </td>
             <td className="px-2 py-3 whitespace-nowrap text-center">
                 <div className="text-sm font-medium transition-colors duration-200 group-hover:text-blue-700 group-hover:font-semibold">
@@ -142,7 +118,6 @@ const DropPlaceholder = ({
         }),
     });
 
-    // Only show placeholder when table is empty
     return (
         <tr
             ref={dropRef}

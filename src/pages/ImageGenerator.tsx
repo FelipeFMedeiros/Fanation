@@ -177,9 +177,10 @@ export default function ImageGenerator() {
                             <div className="flex items-center gap-3">
                                 <button
                                     onClick={() => navigate('/visualizacao')}
-                                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+                                    className="group p-2 rounded-lg transition-colors duration-200 cursor-pointer"
+                                    type="button"
                                 >
-                                    <ArrowBack className="w-5 h-5 text-gray-600" />
+                                    <ArrowBack className="w-5 h-5 text-gray-600 group-hover:text-black transition-colors duration-200" />
                                 </button>
                                 <div>
                                     <h1 className="text-xl lg:text-2xl font-bold text-gray-900">
@@ -236,9 +237,9 @@ export default function ImageGenerator() {
                         )}
 
                         {!isLoading && !error && (
-                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
                                 {/* Left Column - Table */}
-                                <div className="lg:col-span-1">
+                                <div className="lg:col-span-2">
                                     <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
                                         <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
                                             <h2 className="font-semibold text-gray-900">Camadas</h2>
@@ -261,15 +262,15 @@ export default function ImageGenerator() {
                                                 Arraste as peças para alterar a ordem das camadas.
                                             </p>
                                             <p className="text-xs text-gray-500 flex items-center gap-1">
-                                                <InfoOutlined fontSize="small" className="text-blue-400" />
-                                                A camada 1 fica na base da imagem, as superiores sobrepõem as inferiores.
+                                                <InfoOutlined fontSize="small" className="text-blue-400" />A camada 1
+                                                fica na base da imagem, as superiores sobrepõem as inferiores.
                                             </p>
                                         </div>
                                     </div>
                                 </div>
 
                                 {/* Right Column - Generated Image */}
-                                <div className="lg:col-span-2">
+                                <div className="lg:col-span-3">
                                     <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
                                         <div className="px-4 py-3 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
                                             <h2 className="font-semibold text-gray-900">Visualização</h2>

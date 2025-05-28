@@ -275,9 +275,10 @@ export default function Product() {
                                 <div className="flex items-center gap-4 min-w-0">
                                     <button
                                         onClick={() => navigate('/')}
-                                        className="p-2 hover:bg-gray-100 rounded-lg transition-colors duration-200 flex-shrink-0"
+                                        className="group p-2 rounded-lg transition-colors duration-200 cursor-pointer"
+                                        type="button"
                                     >
-                                        <ArrowBack className="w-5 h-5 text-gray-600" />
+                                        <ArrowBack className="w-5 h-5 text-gray-600 group-hover:text-black transition-colors duration-200" />
                                     </button>
                                     <div className="min-w-0 flex-1">
                                         <h1 className="text-lg lg:text-xl font-bold text-gray-900 truncate">
