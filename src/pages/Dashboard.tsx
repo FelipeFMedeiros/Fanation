@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FilterList } from '@mui/icons-material';
-
 // Components
 import PageLayout from '@/components/layout/PageLayout';
 import PageHeader from '@/components/layout/PageHeader';
@@ -11,10 +10,8 @@ import FilterTabs from '@/components/filter/FilterTabs';
 import SearchFilterBar from '@/components/filter/SearchFilterBar';
 import LoadingIndicator from '@/components/ui/LoadingIndicator';
 import ErrorMessage from '@/components/ui/ErrorMessage';
-
 // Hooks
 import useFilterManagement from '@/hooks/useFilterManagement';
-
 // Types
 import { Piece } from '@/types/pieces';
 
@@ -51,13 +48,13 @@ export default function Dashboard() {
     const [totalPages, setTotalPages] = useState(1);
     const [total, setTotal] = useState(0);
 
-    // Load counts when filters or search change
+    // Carrega contagens globais ao montar o componente
     useEffect(() => {
         loadFilteredCounts();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [searchTerm, filters]);
 
-    // Load pieces when page or filters change
+    // Carrega as peças ao montar o componente ou quando os filtros/termos de pesquisa mudam
     useEffect(() => {
         const fetchPieces = async () => {
             const result = await loadPieces();
@@ -70,7 +67,7 @@ export default function Dashboard() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentPage, searchTerm, activeFilter, sortBy, sortOrder, filters]);
 
-    // Function to reload after deletion
+    // Função para lidar com sucesso na exclusão de uma peça
     const handleDeleteSuccess = () => {
         loadFilteredCounts();
         loadPieces().then((result) => {

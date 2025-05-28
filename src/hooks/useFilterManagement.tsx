@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+// Services
 import { recortesService } from '@/services/recortes';
 
 export default function useFilterManagement() {
@@ -26,7 +27,7 @@ export default function useFilterManagement() {
     });
     const [isLoadingCounts, setIsLoadingCounts] = useState(false);
 
-    // Function to load counts with filters applied
+    // Função para carregar as contagens com os filtros aplicados
     const loadFilteredCounts = async () => {
         setIsLoadingCounts(true);
         try {
@@ -58,7 +59,7 @@ export default function useFilterManagement() {
         }
     };
 
-    // Function to load pieces with current filters
+    // Função para carregar as peças com os filtros atuais
     const loadPieces = async () => {
         setIsLoading(true);
         setError('');

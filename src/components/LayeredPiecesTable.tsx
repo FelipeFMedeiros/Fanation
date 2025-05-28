@@ -1,10 +1,8 @@
 import { Delete } from '@mui/icons-material';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-
 // Components
 import PieceItemDisplay from './table/PieceItemDisplay';
-
 // Types
 import { Piece } from '@/types/pieces';
 
@@ -14,7 +12,7 @@ interface LayeredPiecesTableProps {
     onRemovePiece?: (pieceId: string) => void;
 }
 
-// Component for a draggable row item
+// Componente para uma linha da tabela arrastável
 const DraggableRow = ({
     piece,
     index,
@@ -48,7 +46,7 @@ const DraggableRow = ({
         }),
     });
 
-    // Combine drag and drop refs
+    // Combina os refs de arrastar e soltar
     const ref = (el: HTMLTableRowElement) => {
         dragRef(el);
         dropRef(el);
@@ -99,7 +97,6 @@ const DraggableRow = ({
     );
 };
 
-// Empty row placeholder for drop targets
 const DropPlaceholder = ({
     index,
     moveRow,

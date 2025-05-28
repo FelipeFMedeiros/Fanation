@@ -1,4 +1,5 @@
 import { ChevronLeft, ChevronRight } from '@mui/icons-material';
+// Ui
 import Button from '@/components/ui/Button';
 
 interface TablePaginationProps {
@@ -26,7 +27,7 @@ export default function TablePagination({ currentPage, totalPages, onPageChange 
                         <span className="hidden sm:inline">Anterior</span>
                     </Button>
 
-                    {/* Page numbers for desktop */}
+                    {/* Números da página para desktop */}
                     <div className="hidden md:flex items-center gap-1">
                         {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                             let pageNum;

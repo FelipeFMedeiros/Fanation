@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Edit, Delete } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-
 // Components
 import SortableHeader, { SortField, SortOrder } from './table/SortableHeader';
 import TablePagination from './table/TablePagination';
@@ -9,10 +8,8 @@ import PieceItemDisplay from './table/PieceItemDisplay';
 import StatusBadge from './table/StatusBadge';
 import DisplayOrderIndicator from './table/DisplayOrderIndicator';
 import ConfirmationModal from './ui/ConfirmationModal';
-
 // Types
 import { Piece } from '@/types/pieces';
-
 // Services
 import { recortesService } from '@/services/recortes';
 

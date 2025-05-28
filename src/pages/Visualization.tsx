@@ -21,7 +21,7 @@ import { Piece } from '@/types/pieces';
 export default function Visualization() {
     const navigate = useNavigate();
 
-    // Use the filter management hook
+    // Usando o hook de gerenciamento de filtros
     const {
         filterButtonRef,
         activeFilter,

@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { InfoOutlined, ArrowBack } from '@mui/icons-material';
 import { useNavigate, useParams } from 'react-router-dom';
-
 // Components
 import Header from '@/components/Header';
 import Sidebar from '@/components/Sidebar';
@@ -9,13 +8,10 @@ import Button from '@/components/ui/Button';
 import InputField from '@/components/ui/InputField';
 import SelectField from '@/components/ui/SelectField';
 import FileUpload from '@/components/FileUpload';
-
 // Types
 import { CreatePieceData, Piece } from '@/types/pieces';
-
 // Constants
 import { CUT_TYPES, MODEL_TYPES, POSITIONS, DISPLAY_ORDERS, MATERIALS, MATERIAL_COLORS } from '@/constants/system';
-
 // Services
 import { recortesService } from '@/services/recortes';
 
@@ -31,10 +27,10 @@ export default function Product() {
         displayOrder: 1,
         cutType: 'frente',
         position: 'frente',
-        productType: 'americano', // Atualizado - agora só 'americano' ou 'trucker'
+        productType: 'americano',
         material: 'linho',
         materialColor: 'azul marinho',
-        isActive: true, // Adicionado
+        isActive: true, 
     });
     const [originalPiece, setOriginalPiece] = useState<Piece | null>(null);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -69,7 +65,7 @@ export default function Product() {
                 material: piece.material || 'linho',
                 materialColor: piece.materialColor || 'azul marinho',
                 imageUrl: piece.imageUrl,
-                isActive: piece.isActive !== undefined ? piece.isActive : true, // Mapear status
+                isActive: piece.isActive !== undefined ? piece.isActive : true,
                 createdAt: piece.createdAt,
             });
 
@@ -171,7 +167,7 @@ export default function Product() {
             const dataToSave: CreatePieceData = {
                 ...formData,
                 imageUrl,
-                isActive, // Incluir status
+                isActive,
             };
 
             if (isEditMode && originalPiece) {

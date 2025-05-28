@@ -4,7 +4,6 @@ import TablePagination from './table/TablePagination';
 import PieceItemDisplay from './table/PieceItemDisplay';
 import StatusBadge from './table/StatusBadge';
 import DisplayOrderIndicator from './table/DisplayOrderIndicator';
-
 // Types
 import { Piece } from '@/types/pieces';
 
