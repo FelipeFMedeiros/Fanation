@@ -287,7 +287,8 @@ export default function PiecesTable({
                         ))}
                     </tbody>
                 </table>
-{/* Paginação */}
+                
+                {/* Paginação */}
                 <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
                     <div className="flex items-center justify-between">
                         <div className="text-sm text-gray-700">

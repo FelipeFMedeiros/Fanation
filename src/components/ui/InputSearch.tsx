@@ -42,14 +42,14 @@ export default function InputSearch({
             <input
                 type="text"
                 className="
-                    block w-full pl-9 lg:pl-10 pr-10 py-4 lg:py-3
-                    border border-gray-300 rounded-lg
-                    bg-white text-gray-900 placeholder-gray-500
-                    text-sm lg:text-base
-                    focus:outline-none focus:ring-2 focus:ring-[#440986] focus:border-transparent
-                    transition-all duration-200 ease-in-out
-                    hover:border-gray-400
-                "
+        block w-full pl-9 lg:pl-10 pr-10 h-[3.25rem] lg:h-[2.75rem]
+        border border-gray-300 rounded-lg
+        bg-white text-gray-900 placeholder-gray-500
+        text-sm lg:text-base
+        focus:outline-none focus:ring-2 focus:ring-[#440986] focus:border-transparent
+        transition-all duration-200 ease-in-out
+        hover:border-gray-400
+    "
                 placeholder={placeholder}
                 value={displayValue}
                 onChange={handleChange}
