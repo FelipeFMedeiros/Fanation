@@ -134,25 +134,12 @@ export default function ImageGenerator() {
         generateImage();
     }, [pieces]);
 
-    // Handle reordering of the pieces
-    const handleMoveUp = (index: number) => {
-        if (index <= 0) return;
+    const handleReorder = (fromIndex: number, toIndex: number) => {
+        if (fromIndex === toIndex) return;
 
         const newPieces = [...pieces];
-        const temp = newPieces[index];
-        newPieces[index] = newPieces[index - 1];
-        newPieces[index - 1] = temp;
-
-        setPieces(newPieces);
-    };
-
-    const handleMoveDown = (index: number) => {
-        if (index >= pieces.length - 1) return;
-
-        const newPieces = [...pieces];
-        const temp = newPieces[index];
-        newPieces[index] = newPieces[index + 1];
-        newPieces[index + 1] = temp;
+        const [movedPiece] = newPieces.splice(fromIndex, 1);
+        newPieces.splice(toIndex, 0, movedPiece);
 
         setPieces(newPieces);
     };
@@ -263,15 +250,19 @@ export default function ImageGenerator() {
                                         <div className="p-0">
                                             <LayeredPiecesTable
                                                 pieces={pieces}
-                                                onMoveUp={handleMoveUp}
-                                                onMoveDown={handleMoveDown}
+                                                onReorder={handleReorder}
                                                 onRemovePiece={handleRemovePiece}
                                             />
                                         </div>
 
-                                        <div className="px-4 py-3 bg-gray-50 border-t border-gray-200">
-                                            <p className="text-xs text-gray-500">
-                                                Dica: A camada 1 fica na parte inferior da imagem
+                                        <div className="px-4 py-3 bg-gray-50 border-t border-gray-200 flex flex-col gap-2">
+                                            <p className="text-xs text-gray-500 flex items-center gap-1">
+                                                <InfoOutlined fontSize="small" className="text-blue-400" />
+                                                Arraste as peças para alterar a ordem das camadas.
+                                            </p>
+                                            <p className="text-xs text-gray-500 flex items-center gap-1">
+                                                <InfoOutlined fontSize="small" className="text-blue-400" />
+                                                A camada 1 fica na base da imagem, as superiores sobrepõem as inferiores.
                                             </p>
                                         </div>
                                     </div>
@@ -282,16 +273,6 @@ export default function ImageGenerator() {
                                     <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
                                         <div className="px-4 py-3 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
                                             <h2 className="font-semibold text-gray-900">Visualização</h2>
-                                            {generatedImageUrl && !isGenerating && (
-                                                <Button
-                                                    variant="secondary"
-                                                    size="sm"
-                                                    onClick={handleDownload}
-                                                    className="text-xs"
-                                                >
-                                                    <FileDownload fontSize="small" className="mr-1" /> Baixar
-                                                </Button>
-                                            )}
                                         </div>
 
                                         <div className="p-6 flex items-center justify-center">
@@ -305,7 +286,7 @@ export default function ImageGenerator() {
                                                     <img
                                                         src={generatedImageUrl}
                                                         alt="Imagem gerada"
-                                                        className="max-w-full h-auto rounded-lg shadow-sm border border-gray-200"
+                                                        className="max-w-full h-auto rounded-lg"
                                                     />
                                                 </div>
                                             ) : (
