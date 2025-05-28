@@ -84,34 +84,73 @@ Por padrão, o servidor de desenvolvimento estará disponível em:
 Fanation/
 ├── 📦 node_modules/            # Dependências do projeto
 ├── 🌐 public/                  # Arquivos estáticos públicos
+│   ├── fanaticon-blue.png
 │   ├── fanaticon-branca-full.png
 │   ├── fanaticon-branca.png
 │   ├── fanaticon-preta.png
+│   ├── logo-seubone.png
 │   ├── logo.ico
 │   └── logo.png
 ├── 📂 src/
 │   ├── 🖼️ assets/             # Recursos estáticos da aplicação
 │   ├── 🧩 components/          # Componentes reutilizáveis
+│   │   ├── FileUpload.tsx
+│   │   ├── FilterDropdown.tsx
 │   │   ├── Header.tsx
-│   │   └── ui/                 # Componentes de UI
+│   │   ├── LayeredPiecesTable.tsx
+│   │   ├── PiecesTable.tsx
+│   │   ├── SelectablePiecesTable.tsx
+│   │   ├── Sidebar.tsx
+│   │   ├── filter/            # Componentes de filtro
+│   │   │   ├── FilterTabs.tsx
+│   │   │   └── SearchFilterBar.tsx
+│   │   ├── layout/            # Componentes de layout
+│   │   │   ├── PageHeader.tsx
+│   │   │   └── PageLayout.tsx
+│   │   ├── table/             # Componentes de tabela
+│   │   │   ├── DisplayOrderIndicator.tsx
+│   │   │   ├── PieceItemDisplay.tsx
+│   │   │   ├── SortableHeader.tsx
+│   │   │   ├── StatusBadge.tsx
+│   │   │   └── TablePagination.tsx
+│   │   └── ui/                # Componentes de UI
 │   │       ├── Button.tsx
-│   │       └── Input.tsx
+│   │       ├── ConfirmationModal.tsx
+│   │       ├── ErrorMessage.tsx
+│   │       ├── Input.tsx
+│   │       ├── InputField.tsx
+│   │       ├── InputSearch.tsx
+│   │       ├── LoadingIndicator.tsx
+│   │       ├── LoadingSpinner.tsx
+│   │       └── SelectField.tsx
+│   ├── 📜 constants/           # Constantes globais
+│   │   └── system.ts
 │   ├── 🔄 contexts/            # Contextos do React
 │   │   ├── AuthContext.tsx
 │   │   └── AuthContextData.tsx
 │   ├── 🪝 hooks/               # Custom hooks
+│   │   └── useFilterManagement.tsx
 │   ├── 📄 pages/               # Páginas da aplicação
 │   │   ├── Dashboard.tsx
-│   │   └── Login.tsx
+│   │   ├── ImageGenerator.tsx
+│   │   ├── Login.tsx
+│   │   ├── Product.tsx
+│   │   ├── Users.tsx
+│   │   └── Visualization.tsx
 │   ├── 🛣️ router/              # Configuração de rotas
 │   │   ├── AppRoutes.tsx
 │   │   └── PrivateRoute.tsx
 │   ├── 🔌 services/            # Serviços de API
+│   │   ├── api.ts
+│   │   └── recortes.ts
 │   ├── 🎨 styles/              # Estilos globais
 │   │   └── index.css
 │   ├── 📝 types/               # Tipos TypeScript
-│   │   └── auth.ts
+│   │   ├── api.ts
+│   │   ├── auth.ts
+│   │   └── pieces.ts
 │   ├── 🛠️ utils/               # Funções utilitárias
+│   │   └── mockPieces.ts
 │   ├── App.tsx                 # Componente raiz
 │   ├── main.tsx                # Ponto de entrada
 │   └── vite-env.d.ts           # Tipos do Vite
