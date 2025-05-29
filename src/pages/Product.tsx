@@ -8,6 +8,9 @@ import Button from '@/components/ui/Button';
 import InputField from '@/components/ui/InputField';
 import SelectField from '@/components/ui/SelectField';
 import FileUpload from '@/components/FileUpload';
+import Toast from '@/components/ui/Toast';
+// Hooks
+import { useToast } from '@/hooks/useToast';
 // Types
 import { CreatePieceData, Piece } from '@/types/pieces';
 // Constants
@@ -19,6 +22,7 @@ export default function Product() {
     const navigate = useNavigate();
     const { sku } = useParams<{ sku: string }>();
     const isEditMode = Boolean(sku);
+    const { toasts, removeToast, success, error } = useToast();
 
     const [isActive, setIsActive] = useState(true);
     const [formData, setFormData] = useState<CreatePieceData>({
@@ -30,25 +34,24 @@ export default function Product() {
         productType: 'americano',
         material: 'linho',
         materialColor: 'azul marinho',
-        isActive: true, 
+        isActive: true,
     });
     const [originalPiece, setOriginalPiece] = useState<Piece | null>(null);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string>('');
     const [isLoading, setIsLoading] = useState(false);
     const [isLoadingData, setIsLoadingData] = useState(isEditMode);
-    const [error, setError] = useState<string>('');
 
     // Carregar dados da peça para edição
     useEffect(() => {
         if (isEditMode && sku) {
             loadPieceData(sku);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isEditMode, sku]);
 
     const loadPieceData = async (skuToLoad: string) => {
         setIsLoadingData(true);
-        setError('');
 
         try {
             const piece = await recortesService.getRecorteBySku(skuToLoad);
@@ -77,7 +80,7 @@ export default function Product() {
             setIsActive(piece.isActive !== undefined ? piece.isActive : true);
         } catch (err) {
             console.error('Erro ao carregar peça:', err);
-            setError('Erro ao carregar dados da peça. Verifique se o SKU está correto.');
+            error('Erro ao carregar peça', 'Verifique se o SKU está correto e tente novamente.');
         } finally {
             setIsLoadingData(false);
         }
@@ -128,22 +131,21 @@ export default function Product() {
     const handleSubmit = async () => {
         // Validações obrigatórias
         if (!formData.title.trim()) {
-            setError('Nome do modelo é obrigatório');
+            error('Campo obrigatório', 'Nome do modelo é obrigatório');
             return;
         }
 
         if (!formData.sku.trim()) {
-            setError('SKU é obrigatório');
+            error('Campo obrigatório', 'SKU é obrigatório');
             return;
         }
 
         if (!selectedFile && !formData.imageUrl) {
-            setError('Imagem é obrigatória');
+            error('Campo obrigatório', 'Imagem é obrigatória');
             return;
         }
 
         setIsLoading(true);
-        setError('');
 
         try {
             let imageUrl = formData.imageUrl || '';
@@ -160,7 +162,8 @@ export default function Product() {
                     imageUrl = uploadResponse.imageUrl;
                 } catch (uploadError) {
                     console.error('Erro no upload:', uploadError);
-                    throw new Error('Erro ao fazer upload da imagem');
+                    error('Erro no upload', 'Erro ao fazer upload da imagem');
+                    return;
                 }
             }
 
@@ -173,16 +176,20 @@ export default function Product() {
             if (isEditMode && originalPiece) {
                 // Atualizar peça existente
                 await recortesService.updateRecorte(originalPiece.id, dataToSave);
+                success('Peça atualizada', 'A peça foi atualizada com sucesso!');
             } else {
                 // Criar nova peça
                 await recortesService.createRecorte(dataToSave);
+                success('Peça criada', 'A peça foi criada com sucesso!');
             }
 
-            // Navegar de volta para o dashboard
-            navigate('/');
+            // Aguardar um pouco para mostrar o toast antes de navegar
+            setTimeout(() => {
+                navigate('/');
+            }, 1500);
         } catch (err) {
             console.error('Erro ao salvar peça:', err);
-            setError(err instanceof Error ? err.message : 'Erro ao salvar peça');
+            error('Erro ao salvar', err instanceof Error ? err.message : 'Erro ao salvar peça');
         } finally {
             setIsLoading(false);
         }
@@ -212,6 +219,21 @@ export default function Product() {
 
     return (
         <div className="h-screen bg-gray-50 flex flex-col">
+            {/* Toast Container */}
+            <div className="fixed top-4 right-4 z-50 space-y-3">
+                {toasts.map((toast) => (
+                    <Toast
+                        key={toast.id}
+                        id={toast.id}
+                        type={toast.type}
+                        title={toast.title}
+                        message={toast.message}
+                        duration={toast.duration}
+                        onClose={removeToast}
+                    />
+                ))}
+            </div>
+
             {/* Header */}
             <Header variant="primary" />
 
@@ -257,13 +279,6 @@ export default function Product() {
 
                     {/* Scrollable Content Container */}
                     <div className="flex-1 overflow-y-auto px-4 lg:px-6">
-                        {/* Error Message */}
-                        {error && (
-                            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6 mt-6">
-                                <p className="text-red-800 text-sm">{error}</p>
-                            </div>
-                        )}
-
                         {/* Seção de informações do produto */}
                         <div className="rounded-lg p-4 lg:p-6 mb-6 lg:mb-8">
                             <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
@@ -339,6 +354,7 @@ export default function Product() {
                             </div>
                         </div>
 
+                        {/* ...existing code... (resto do formulário permanece igual) */}
                         {/* Formulário Principal */}
                         <div className="space-y-6 lg:space-y-8">
                             {/* Primeira linha - Especificações e Dados do produto */}
