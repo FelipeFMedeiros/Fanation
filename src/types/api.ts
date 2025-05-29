@@ -94,3 +94,48 @@ export interface RecortesParams {
     cor?: string;
     status?: boolean;
 }
+
+export interface UserApiData {
+    id: string;
+    name: string;
+    role: string;
+    description?: string;
+    createdAt: string;
+    updatedAt?: string;
+    createdBy: string;
+    creatorName: string;
+}
+
+export interface UsersListResponse {
+    success: boolean;
+    users: UserApiData[];
+    total: number;
+    filters: {
+        search: string | null;
+        sortBy: string;
+        sortOrder: string;
+    };
+    message?: string;
+}
+
+export interface UserResponse {
+    success: boolean;
+    userId?: string;
+    message?: string;
+}
+
+export interface UserCreateData {
+    name: string;
+    password: string;
+    description?: string;
+}
+
+export interface UserUpdateData {
+    userId: string;
+    name?: string;
+    description?: string;
+}
+
+export interface UserDeleteData {
+    userId: string;
+}

@@ -14,6 +14,7 @@ import ErrorMessage from '@/components/ui/ErrorMessage';
 import useFilterManagement from '@/hooks/useFilterManagement';
 // Types
 import { Piece } from '@/types/pieces';
+import AddIcon from '@mui/icons-material/Add';
 
 export default function Dashboard() {
     const navigate = useNavigate();
@@ -91,6 +92,7 @@ export default function Dashboard() {
                             </Button>
                         )}
                         <Button variant="primary" className="w-full lg:w-auto" onClick={() => navigate('/criar')}>
+                            <AddIcon className="mr-2" />
                             Adicionar peça
                         </Button>
                     </>

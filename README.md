@@ -82,8 +82,18 @@ Por padrão, o servidor de desenvolvimento estará disponível em:
 
 ```
 Fanation/
-├── 📦 node_modules/            # Dependências do projeto
-├── 🌐 public/                  # Arquivos estáticos públicos
+├── 📂 .env                     # Variáveis de ambiente
+├── 📂 .env.example             # Exemplo de variáveis de ambiente
+├── 📂 .gitignore               # Arquivos ignorados pelo Git
+├── ⚙️ eslint.config.js          # Configuração do ESLint
+├── 🌐 index.html                # Arquivo HTML principal
+├── 📦 package.json              # Dependências e scripts do projeto
+├── 📋 README.md                 # Documentação do projeto
+├── ⚙️ tsconfig.app.json         # Configuração TypeScript para aplicação
+├── ⚙️ tsconfig.json             # Configuração principal do TypeScript
+├── ⚙️ tsconfig.node.json        # Configuração TypeScript para Node.js
+├── ⚙️ vite.config.ts            # Configuração do Vite
+├── 🌐 public/                   # Arquivos estáticos públicos
 │   ├── fanaticon-blue.png
 │   ├── fanaticon-branca-full.png
 │   ├── fanaticon-branca.png
@@ -91,78 +101,69 @@ Fanation/
 │   ├── logo-seubone.png
 │   ├── logo.ico
 │   └── logo.png
-├── 📂 src/
-│   ├── 🖼️ assets/             # Recursos estáticos da aplicação
-│   ├── 🧩 components/          # Componentes reutilizáveis
-│   │   ├── FileUpload.tsx
-│   │   ├── FilterDropdown.tsx
-│   │   ├── Header.tsx
-│   │   ├── LayeredPiecesTable.tsx
-│   │   ├── PiecesTable.tsx
-│   │   ├── SelectablePiecesTable.tsx
-│   │   ├── Sidebar.tsx
-│   │   ├── filter/            # Componentes de filtro
-│   │   │   ├── FilterTabs.tsx
-│   │   │   └── SearchFilterBar.tsx
-│   │   ├── layout/            # Componentes de layout
-│   │   │   ├── PageHeader.tsx
-│   │   │   └── PageLayout.tsx
-│   │   ├── table/             # Componentes de tabela
-│   │   │   ├── DisplayOrderIndicator.tsx
-│   │   │   ├── PieceItemDisplay.tsx
-│   │   │   ├── SortableHeader.tsx
-│   │   │   ├── StatusBadge.tsx
-│   │   │   └── TablePagination.tsx
-│   │   └── ui/                # Componentes de UI
-│   │       ├── Button.tsx
-│   │       ├── ConfirmationModal.tsx
-│   │       ├── ErrorMessage.tsx
-│   │       ├── Input.tsx
-│   │       ├── InputField.tsx
-│   │       ├── InputSearch.tsx
-│   │       ├── LoadingIndicator.tsx
-│   │       ├── LoadingSpinner.tsx
-│   │       └── SelectField.tsx
-│   ├── 📜 constants/           # Constantes globais
-│   │   └── system.ts
-│   ├── 🔄 contexts/            # Contextos do React
-│   │   ├── AuthContext.tsx
-│   │   └── AuthContextData.tsx
-│   ├── 🪝 hooks/               # Custom hooks
-│   │   └── useFilterManagement.tsx
-│   ├── 📄 pages/               # Páginas da aplicação
-│   │   ├── Dashboard.tsx
-│   │   ├── ImageGenerator.tsx
-│   │   ├── Login.tsx
-│   │   ├── Product.tsx
-│   │   ├── Users.tsx
-│   │   └── Visualization.tsx
-│   ├── 🛣️ router/              # Configuração de rotas
-│   │   ├── AppRoutes.tsx
-│   │   └── PrivateRoute.tsx
-│   ├── 🔌 services/            # Serviços de API
-│   │   ├── api.ts
-│   │   └── recortes.ts
-│   ├── 🎨 styles/              # Estilos globais
-│   │   └── index.css
-│   ├── 📝 types/               # Tipos TypeScript
-│   │   ├── api.ts
-│   │   ├── auth.ts
-│   │   └── pieces.ts
-│   ├── 🛠️ utils/               # Funções utilitárias
-│   │   └── mockPieces.ts
-│   ├── App.tsx                 # Componente raiz
-│   ├── main.tsx                # Ponto de entrada
-│   └── vite-env.d.ts           # Tipos do Vite
-├── 📝 .gitignore
-├── ⚙️ eslint.config.js
-├── 🌐 index.html
-├── 📦 package.json
-├── 📋 README.md
-├── ⚙️ tsconfig.app.json
-├── ⚙️ tsconfig.json
-├── ⚙️ tsconfig.node.json
-└── ⚙️ vite.config.ts
+└── 📂 src/
+    ├── 🖼️ assets/              # Recursos estáticos da aplicação
+    ├── 🧩 components/           # Componentes reutilizáveis
+    │   ├── FileUpload.tsx
+    │   ├── FilterDropdown.tsx
+    │   ├── Header.tsx
+    │   ├── LayeredPiecesTable.tsx
+    │   ├── PiecesTable.tsx
+    │   ├── SelectablePiecesTable.tsx
+    │   ├── Sidebar.tsx
+    │   ├── filter/             # Componentes de filtro
+    │   │   ├── FilterTabs.tsx
+    │   │   └── SearchFilterBar.tsx
+    │   ├── layout/             # Componentes de layout
+    │   │   ├── PageHeader.tsx
+    │   │   └── PageLayout.tsx
+    │   ├── table/              # Componentes de tabela
+    │   │   ├── DisplayOrderIndicator.tsx
+    │   │   ├── PieceItemDisplay.tsx
+    │   │   ├── SortableHeader.tsx
+    │   │   ├── StatusBadge.tsx
+    │   │   └── TablePagination.tsx
+    │   └── ui/                 # Componentes de UI
+    │       ├── Button.tsx
+    │       ├── ConfirmationModal.tsx
+    │       ├── ErrorMessage.tsx
+    │       ├── Input.tsx
+    │       ├── InputField.tsx
+    │       ├── InputSearch.tsx
+    │       ├── LoadingIndicator.tsx
+    │       ├── LoadingSpinner.tsx
+    │       └── SelectField.tsx
+    ├── 📜 constants/            # Constantes globais
+    │   └── system.ts
+    ├── 🔄 contexts/             # Contextos do React
+    │   ├── AuthContext.tsx
+    │   └── AuthContextData.tsx
+    ├── 🪝 hooks/                # Custom hooks
+    │   └── useFilterManagement.tsx
+    ├── 📄 pages/                # Páginas da aplicação
+    │   ├── Dashboard.tsx
+    │   ├── ImageGenerator.tsx
+    │   ├── Login.tsx
+    │   ├── Product.tsx
+    │   ├── Users.tsx
+    │   └── Visualization.tsx
+    ├── 🛣️ router/               # Configuração de rotas
+    │   ├── AppRoutes.tsx
+    │   └── PrivateRoute.tsx
+    ├── 🔌 services/             # Serviços de API
+    │   ├── api.ts
+    │   └── recortes.ts
+    ├── 🎨 styles/               # Estilos globais
+    │   └── index.css
+    ├── 📝 types/                # Tipos TypeScript
+    │   ├── api.ts
+    │   ├── auth.ts
+    │   └── pieces.ts
+    ├── 🛠️ utils/                # Funções utilitárias
+    │   └── mockPieces.ts
+    ├── App.tsx                  # Componente raiz
+    ├── main.tsx                 # Ponto de entrada
+    └── vite-env.d.ts            # Tipos do Vite
 ```
 
 ## 🛠️ Tecnologias Utilizadas
@@ -216,7 +217,7 @@ Este projeto foi desenvolvido como parte de um desafio técnico focado em criar 
 3. Implementar um serviço de armazenamento para gerenciar imagens
 4. Gerenciar a ordem de exibição das camadas com posicionamento CSS
 
----
+Para saber mais sobre o desafio técnico, acesse o [repositório do desafio](https://github.com/seubone/desafio-tech/tree/main).
 
 Desenvolvido por [Felipe Medeiros](https://github.com/FelipeFMedeiros)
 
