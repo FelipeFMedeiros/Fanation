@@ -22,7 +22,7 @@ export default function Sidebar() {
         if (pathname === '/' || pathname === '/dashboard') return 'pecas';
         if (pathname.startsWith('/criar') || pathname.startsWith('/editar')) return 'pecas';
         if (pathname.startsWith('/visualizacao')) return 'visualizacao';
-        if (pathname === '/usuarios') return 'usuarios';
+        if (pathname.startsWith('/usuarios')) return 'usuarios'; // Inclui rotas de criar/editar usuários
         return 'pecas'; // default
     };
 

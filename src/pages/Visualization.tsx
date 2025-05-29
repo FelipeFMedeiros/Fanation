@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FilterList } from '@mui/icons-material';
+import { FilterList, AutoAwesome } from '@mui/icons-material';
 
 // Components
 import PageLayout from '@/components/layout/PageLayout';
@@ -116,6 +116,7 @@ export default function Visualization() {
                             onClick={handleGenerateImage}
                             disabled={selectedPieces.length === 0}
                         >
+                            <AutoAwesome className="w-4 h-4 mr-2" />
                             Gerar Imagem
                             {selectedPieces.length > 0 && ` (${selectedPieces.length})`}
                         </Button>

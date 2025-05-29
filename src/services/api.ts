@@ -162,9 +162,11 @@ class ApiService {
         }
     }
 
-    async delete<T = void>(endpoint: string): Promise<T> {
+    async delete<T = void>(endpoint: string, data?: unknown): Promise<T> {
         try {
-            const response = await this.api.delete<T>(endpoint);
+            const response = await this.api.delete<T>(endpoint, {
+                data,
+            });
             return response.data;
         } catch (error) {
             if (axios.isAxiosError(error)) {

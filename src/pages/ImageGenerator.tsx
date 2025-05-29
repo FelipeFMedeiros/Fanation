@@ -104,12 +104,15 @@ export default function ImageGenerator() {
 
                 // Carrega e desenha cada imagem no canvas
                 for (const piece of pieces) {
+                    // Verifica se a peça possui uma URL de imagem
                     if (piece.imageUrl) {
                         try {
+                            // Carrega a imagem da peça de forma assíncrona
                             const img = await loadImage(piece.imageUrl);
-                            // Draw image on canvas
+                            // Desenha a imagem no canvas, ocupando toda a área do canvas
                             ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
                         } catch (err) {
+                            // Em caso de erro ao carregar a imagem, exibe no console
                             console.error(`Error loading image for piece ${piece.title}:`, err);
                         }
                     }
